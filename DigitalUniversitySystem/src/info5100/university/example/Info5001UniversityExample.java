@@ -29,22 +29,25 @@ public class Info5001UniversityExample {
         // TODO code application logic here
         Department department = new Department("Information Systems");
         CourseCatalog coursecatalog = department.getCourseCatalog();
-        
+
         Course course = coursecatalog.newCourse("app eng", "info 5100", 4);
-        
+
         CourseSchedule courseschedule = department.newCourseSchedule("Fall2020");
 
         CourseOffer courseoffer = courseschedule.newCourseOffer("info 5100");
-        if (courseoffer==null)return;
+        if (courseoffer == null) {
+            return;
+        }
         courseoffer.generatSeats(10);
         PersonDirectory pd = department.getPersonDirectory();
-        Person person = pd.newPerson("0112303");
+//        Person person = pd.newPerson("0112303");
+        Person person = pd.newPerson("0112303", "person@example.com", "John", "Doe", "123-456-7890");
         StudentDirectory sd = department.getStudentDirectory();
         StudentProfile student = sd.newStudentProfile(person);
-        CourseLoad courseload = student.newCourseLoad("Fall2020"); 
+        CourseLoad courseload = student.newCourseLoad("Fall2020");
 //        
         courseload.newSeatAssignment(courseoffer); //register student in class
-        
+
         int total = department.calculateRevenuesBySemester("Fall2020");
         System.out.print("Total: " + total);
 
