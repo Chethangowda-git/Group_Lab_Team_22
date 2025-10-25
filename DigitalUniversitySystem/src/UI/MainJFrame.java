@@ -127,8 +127,8 @@ private void showAdminPanel() {
 
     private void showRegistrarPanel() {
         if (registrarPanel == null) {
-//            registrarPanel = new RegistrarPanel(department, this);
-            registrarPanel = new RegistrarPanel();
+            registrarPanel = new RegistrarPanel(department, this);
+//            registrarPanel = new RegistrarPanel();
             cardPanel.add(registrarPanel, "REGISTRAR");
         }
         cardLayout.show(cardPanel, "REGISTRAR");
