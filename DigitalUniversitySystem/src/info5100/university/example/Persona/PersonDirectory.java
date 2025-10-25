@@ -21,9 +21,8 @@ public class PersonDirectory {
 
     }
 
-    public Person newPerson(String id) {
-
-        Person p = new Person(id);
+     public Person newPerson(String id, String email, String firstName, String lastName, String phone) {
+        Person p = new Person(id, email, firstName, lastName, phone);
         personlist.add(p);
         return p;
     }
