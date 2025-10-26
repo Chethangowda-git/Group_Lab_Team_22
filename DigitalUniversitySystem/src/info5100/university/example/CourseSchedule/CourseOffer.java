@@ -21,11 +21,15 @@ public class CourseOffer {
     FacultyAssignment facultyassignment;
     String room;
     String scheduleTime;
+    String syllabus;              // Course syllabus/description
+    boolean enrollmentOpen;
 
-    public CourseOffer(Course c) {
-        course = c;
-        seatlist = new ArrayList();
-    }
+  public CourseOffer(Course c) {
+    course = c;
+    seatlist = new ArrayList();
+    enrollmentOpen = true;  // Default: enrollment is open
+    syllabus = "Syllabus not yet uploaded"; // Default
+}
 
     public void AssignAsTeacher(FacultyProfile fp) {
 
@@ -140,5 +144,36 @@ public class CourseOffer {
     public void setScheduleTime(String scheduleTime) {
         this.scheduleTime = scheduleTime;
     }
+    public ArrayList<Seat> getSeatList() {
+    return seatlist;
+}
+    
+    /**
+ * Get syllabus
+ */
+public String getSyllabus() {
+    return syllabus;
+}
+
+/**
+ * Set syllabus
+ */
+public void setSyllabus(String syllabus) {
+    this.syllabus = syllabus;
+}
+
+/**
+ * Check if enrollment is open
+ */
+public boolean isEnrollmentOpen() {
+    return enrollmentOpen;
+}
+
+/**
+ * Set enrollment status
+ */
+public void setEnrollmentOpen(boolean enrollmentOpen) {
+    this.enrollmentOpen = enrollmentOpen;
+}
 
 }
