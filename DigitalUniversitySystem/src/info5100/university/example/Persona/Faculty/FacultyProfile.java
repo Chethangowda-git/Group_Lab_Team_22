@@ -60,5 +60,8 @@ public class FacultyProfile {
         }
         return false;
     }
+    public ArrayList<FacultyAssignment> getFacultyAssignments() {
+    return facultyassignments;
+}
 
 }
