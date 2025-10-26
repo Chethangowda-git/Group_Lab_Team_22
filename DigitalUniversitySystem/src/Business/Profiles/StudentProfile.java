@@ -4,34 +4,39 @@
  * and open the template in the editor.
  */
 package Business.Profiles;
-
 import Business.Person.Person;
 
-/**
- *
- * @author kal bugrara
- */
 public class StudentProfile extends Profile {
-
-//    Person person;
-//    Transcript transcript;
-    //   EmploymentHistroy employmenthistory;
-
+    
+    // Link to University Model Student Profile
+    private info5100.university.example.Persona.StudentProfile universityStudentProfile;
+    
     public StudentProfile(Person p) {
         super(p);
-
-//        transcript = new Transcript(this);
-//        employmenthistory = new EmploymentHistroy();
+        
+        // Create University Model Person and StudentProfile
+        info5100.university.example.Persona.Person universityPerson = 
+            new info5100.university.example.Persona.Person(
+                p.getPersonId(), 
+                p.getEmail(), 
+                p.getFirstName(), 
+                p.getLastName(), 
+                p.getPhone()
+            );
+        
+        this.universityStudentProfile = 
+            new info5100.university.example.Persona.StudentProfile(universityPerson);
     }
-
+    
     @Override
     public String getRole() {
         return "Student";
     }
-
-     @Override
-    public boolean isMatch(String id) {
-        if (person == null) return false;
-        return person.getPersonId().equals(id);
+    
+    /**
+     * Get the University Model StudentProfile for advanced operations
+     */
+    public info5100.university.example.Persona.StudentProfile getUniversityProfile() {
+        return universityStudentProfile;
     }
 }
