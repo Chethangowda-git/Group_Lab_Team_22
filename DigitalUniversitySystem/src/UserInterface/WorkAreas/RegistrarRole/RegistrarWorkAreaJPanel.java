@@ -140,9 +140,11 @@ public class RegistrarWorkAreaJPanel extends javax.swing.JPanel {
 }
 
     private void btnFinancialReportsActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO: Financial Reconciliation panel
-        javax.swing.JOptionPane.showMessageDialog(this, "Financial Reconciliation - Coming soon!");
-    }
+    // Open Financial Reconciliation Panel
+    FinancialReconciliationPanel panel = new FinancialReconciliationPanel(business, registrar, CardSequencePanel);
+    CardSequencePanel.add("FinancialReconciliation", panel);
+    ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);
+}
 
     private void btnInstitutionalReportsActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO: Institutional Reports panel
