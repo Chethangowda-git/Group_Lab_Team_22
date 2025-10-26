@@ -15,12 +15,11 @@ import java.util.ArrayList;
  */
 public class StudentDirectory {
 
-
     ArrayList<StudentProfile> studentlist;
 
     public StudentDirectory() {
 
-     studentlist = new ArrayList();
+        studentlist = new ArrayList();
 
     }
 
@@ -39,7 +38,11 @@ public class StudentDirectory {
                 return sp;
             }
         }
-            return null; //not found after going through the whole list
-         }
-    
+        return null; //not found after going through the whole list
+    }
+
+    public ArrayList<StudentProfile> getStudentList() {
+        return studentlist;
+    }
+
 }

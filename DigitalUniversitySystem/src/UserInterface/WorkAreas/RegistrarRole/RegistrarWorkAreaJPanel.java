@@ -132,10 +132,12 @@ public class RegistrarWorkAreaJPanel extends javax.swing.JPanel {
         ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);
     }
 
-    private void btnStudentRegistrationActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO: Admin-side student registration panel
-        javax.swing.JOptionPane.showMessageDialog(this, "Student Registration (Admin-Side) - Coming soon!");
-    }
+  private void btnStudentRegistrationActionPerformed(java.awt.event.ActionEvent evt) {
+    // Open Student Registration Panel
+    StudentRegistrationPanel panel = new StudentRegistrationPanel(business, registrar, CardSequencePanel);
+    CardSequencePanel.add("StudentRegistration", panel);
+    ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);
+}
 
     private void btnFinancialReportsActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO: Financial Reconciliation panel
