@@ -42,4 +42,7 @@ public class Seat {
     occupied = false;
     seatassignment = null;
 }
+    public SeatAssignment getSeatAssignment() {
+    return seatassignment;
+}
 }
