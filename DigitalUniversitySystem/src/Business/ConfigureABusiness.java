@@ -174,64 +174,93 @@ if (testFaculty != null) {
 }
         // ============ ASSIGN SAMPLE GRADES FOR GPA TESTING ============
         
-        // Student 1: John Smith - Excellent student (GPA ~3.85)
-        StudentProfile student1 = sd.findStudent("student001");
-        if (student1 != null) {
-            info5100.university.example.Persona.StudentProfile univStudent1 = student1.getUniversityProfile();
-            CourseLoad cl1 = univStudent1.newCourseLoad("Fall2025");
-            
-            SeatAssignment sa1 = co1.assignEmptySeat(cl1);
-            if (sa1 != null) sa1.setLetterGrade("A");  // 4.0
-            
-            SeatAssignment sa2 = co2.assignEmptySeat(cl1);
-            if (sa2 != null) sa2.setLetterGrade("A-"); // 3.7
-        }
+    // Student 1: John Smith
+StudentProfile student1 = sd.findStudent("student001");
+if (student1 != null) {
+    info5100.university.example.Persona.StudentProfile univStudent1 = student1.getUniversityProfile();
+    CourseLoad cl1 = univStudent1.newCourseLoad("Fall2025");
+    
+    SeatAssignment sa1 = co1.assignEmptySeat(cl1);
+    if (sa1 != null) {
+        sa1.setLetterGrade("A");
+        student1.addTuitionCharge(co1.getSubjectCourse().getCoursePrice()); // BILL!
+    }
+    
+    SeatAssignment sa2 = co2.assignEmptySeat(cl1);
+    if (sa2 != null) {
+        sa2.setLetterGrade("A-");
+        student1.addTuitionCharge(co2.getSubjectCourse().getCoursePrice()); // BILL!
+    }
+}
 
-        // Student 2: Emma Johnson - Good student (GPA ~3.15)
-        StudentProfile student2 = sd.findStudent("student002");
-        if (student2 != null) {
-            info5100.university.example.Persona.StudentProfile univStudent2 = student2.getUniversityProfile();
-            CourseLoad cl2 = univStudent2.newCourseLoad("Fall2025");
-            
-            SeatAssignment sa3 = co3.assignEmptySeat(cl2);
-            if (sa3 != null) sa3.setLetterGrade("B+"); // 3.3
-            
-            SeatAssignment sa4 = co4.assignEmptySeat(cl2);
-            if (sa4 != null) sa4.setLetterGrade("B");  // 3.0
-        }
+// Student 2: Emma Johnson
+StudentProfile student2 = sd.findStudent("student002");
+if (student2 != null) {
+    info5100.university.example.Persona.StudentProfile univStudent2 = student2.getUniversityProfile();
+    CourseLoad cl2 = univStudent2.newCourseLoad("Fall2025");
+    
+    SeatAssignment sa3 = co3.assignEmptySeat(cl2);
+    if (sa3 != null) {
+        sa3.setLetterGrade("B+");
+        student2.addTuitionCharge(co3.getSubjectCourse().getCoursePrice()); // BILL!
+    }
+    
+    SeatAssignment sa4 = co4.assignEmptySeat(cl2);
+    if (sa4 != null) {
+        sa4.setLetterGrade("B");
+        student2.addTuitionCharge(co4.getSubjectCourse().getCoursePrice()); // BILL!
+    }
+}
 
-        // Student 3: Michael Williams - At-risk student (GPA 2.3)
-        StudentProfile student3 = sd.findStudent("student003");
-        if (student3 != null) {
-            info5100.university.example.Persona.StudentProfile univStudent3 = student3.getUniversityProfile();
-            CourseLoad cl3 = univStudent3.newCourseLoad("Fall2025");
-            
-            SeatAssignment sa5 = co5.assignEmptySeat(cl3);
-            if (sa5 != null) sa5.setLetterGrade("C+"); // 2.3
-        }
+// Student 3: Michael Williams
+StudentProfile student3 = sd.findStudent("student003");
+if (student3 != null) {
+    info5100.university.example.Persona.StudentProfile univStudent3 = student3.getUniversityProfile();
+    CourseLoad cl3 = univStudent3.newCourseLoad("Fall2025");
+    
+    SeatAssignment sa5 = co5.assignEmptySeat(cl3);
+    if (sa5 != null) {
+        sa5.setLetterGrade("C+");
+        student3.addTuitionCharge(co5.getSubjectCourse().getCoursePrice()); // BILL!
+    }
+}
+
+// Student 4: Sophia Brown
+StudentProfile student4 = sd.findStudent("student004");
+if (student4 != null) {
+    info5100.university.example.Persona.StudentProfile univStudent4 = student4.getUniversityProfile();
+    CourseLoad cl4 = univStudent4.newCourseLoad("Fall2025");
+    
+    SeatAssignment sa6 = co1.assignEmptySeat(cl4);
+    if (sa6 != null) {
+        sa6.setLetterGrade("A");
+        student4.addTuitionCharge(co1.getSubjectCourse().getCoursePrice()); // BILL!
+    }
+    
+    SeatAssignment sa7 = co3.assignEmptySeat(cl4);
+    if (sa7 != null) {
+        sa7.setLetterGrade("A");
+        student4.addTuitionCharge(co3.getSubjectCourse().getCoursePrice()); // BILL!
+    }
+}
+
+// Student 5: William Jones
+StudentProfile student5 = sd.findStudent("student005");
+if (student5 != null) {
+    info5100.university.example.Persona.StudentProfile univStudent5 = student5.getUniversityProfile();
+    CourseLoad cl5 = univStudent5.newCourseLoad("Fall2025");
+    
+    SeatAssignment sa8 = co2.assignEmptySeat(cl5);
+    if (sa8 != null) {
+        sa8.setLetterGrade("C-");
+        student5.addTuitionCharge(co2.getSubjectCourse().getCoursePrice()); // BILL!
+    }
+}
+
+System.out.println("💰 Billed tuition to all pre-enrolled students");
+
         
-        // Student 4: Sophia Brown - Perfect student (GPA 4.0)
-        StudentProfile student4 = sd.findStudent("student004");
-        if (student4 != null) {
-            info5100.university.example.Persona.StudentProfile univStudent4 = student4.getUniversityProfile();
-            CourseLoad cl4 = univStudent4.newCourseLoad("Fall2025");
-            
-            SeatAssignment sa6 = co1.assignEmptySeat(cl4);
-            if (sa6 != null) sa6.setLetterGrade("A");  // 4.0
-            
-            SeatAssignment sa7 = co3.assignEmptySeat(cl4);
-            if (sa7 != null) sa7.setLetterGrade("A");  // 4.0
-        }
-        
-        // Student 5: William Jones - Struggling student (GPA 1.7)
-        StudentProfile student5 = sd.findStudent("student005");
-        if (student5 != null) {
-            info5100.university.example.Persona.StudentProfile univStudent5 = student5.getUniversityProfile();
-            CourseLoad cl5 = univStudent5.newCourseLoad("Fall2025");
-            
-            SeatAssignment sa8 = co2.assignEmptySeat(cl5);
-            if (sa8 != null) sa8.setLetterGrade("C-"); // 1.7
-        }
+    
 
         System.out.println("✅ System Initialized!");
         System.out.println("📊 30 persons, 10 students, 10 faculty, 1 admin, 1 registrar");
