@@ -47,6 +47,9 @@ public class CourseSchedule {
         }
         return null;
     }
+    public ArrayList<CourseOffer> getCourseOffers() {
+    return schedule;
+}
 
     public int calculateTotalRevenues() {
         int sum = 0;

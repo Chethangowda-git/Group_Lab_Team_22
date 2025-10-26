@@ -24,7 +24,7 @@ public class CourseOffer {
         course = c;
         seatlist = new ArrayList();
     }
-     
+
     public void AssignAsTeacher(FacultyProfile fp) {
 
         facultyassignment = new FacultyAssignment(fp, this);
@@ -59,7 +59,6 @@ public class CourseOffer {
         return null;
     }
 
-
     public SeatAssignment assignEmptySeat(CourseLoad cl) {
 
         Seat seat = getEmptySeat();
@@ -83,11 +82,33 @@ public class CourseOffer {
         }
         return sum;
     }
-    public Course getSubjectCourse(){
+
+    public Course getSubjectCourse() {
         return course;
     }
-    public int getCreditHours(){
+
+    public int getCreditHours() {
         return course.getCredits();
+    }
+
+    /**
+     * Get total capacity (number of seats)
+     */
+    public int getCapacity() {
+        return seatlist.size();
+    }
+
+    /**
+     * Get number of enrolled students (occupied seats)
+     */
+    public int getEnrolledCount() {
+        int count = 0;
+        for (Seat s : seatlist) {
+            if (s.isOccupied()) {
+                count++;
+            }
+        }
+        return count;
     }
 
 }
