@@ -11,6 +11,8 @@ import info5100.university.example.CourseSchedule.CourseSchedule;
 import info5100.university.example.CourseSchedule.CourseOffer;
 import info5100.university.example.CourseSchedule.CourseLoad;
 import info5100.university.example.CourseSchedule.SeatAssignment;
+import info5100.university.example.Persona.Faculty.FacultyAssignment;
+import java.util.ArrayList;
 
 class ConfigureABusiness {
 
@@ -129,7 +131,47 @@ class ConfigureABusiness {
 
         CourseOffer co5 = fall2025.newCourseOffer("CSYE7200");
         if (co5 != null) co5.generatSeats(20);
+        
+        
+        // ============ ASSIGN FACULTY TO COURSES ============
 
+// Assign faculty1 (David Wilson) to INFO5100 and INFO6150
+FacultyProfile faculty1 = fd.findFaculty("faculty001");
+if (faculty1 != null && co1 != null) {
+    co1.AssignAsTeacher(faculty1.getUniversityProfile());
+    System.out.println("✅ Assigned David Wilson to INFO5100");
+}
+if (faculty1 != null && co2 != null) {
+    co2.AssignAsTeacher(faculty1.getUniversityProfile());
+    System.out.println("✅ Assigned David Wilson to INFO6150");
+}
+
+// Assign faculty2 (Sarah Moore) to INFO6205
+FacultyProfile faculty2 = fd.findFaculty("faculty002");
+if (faculty2 != null && co3 != null) {
+    co3.AssignAsTeacher(faculty2.getUniversityProfile());
+    System.out.println("✅ Assigned Sarah Moore to INFO6205");
+}
+
+// Assign faculty3 (Thomas Taylor) to DAMG6210
+FacultyProfile faculty3 = fd.findFaculty("faculty003");
+if (faculty3 != null && co4 != null) {
+    co4.AssignAsTeacher(faculty3.getUniversityProfile());
+    System.out.println("✅ Assigned Thomas Taylor to DAMG6210");
+}
+
+// Assign faculty4 (Jennifer Anderson) to CSYE7200
+FacultyProfile faculty4 = fd.findFaculty("faculty004");
+if (faculty4 != null && co5 != null) {
+    co5.AssignAsTeacher(faculty4.getUniversityProfile());
+    System.out.println("✅ Assigned Jennifer Anderson to CSYE7200");
+}
+FacultyProfile testFaculty = fd.findFaculty("faculty001");
+if (testFaculty != null) {
+    info5100.university.example.Persona.Faculty.FacultyProfile univFac = testFaculty.getUniversityProfile();
+    ArrayList<FacultyAssignment> testAssignments = univFac.getFacultyAssignments();
+    System.out.println("🔍 DEBUG: Faculty001 has " + testAssignments.size() + " assignments");
+}
         // ============ ASSIGN SAMPLE GRADES FOR GPA TESTING ============
         
         // Student 1: John Smith - Excellent student (GPA ~3.85)
