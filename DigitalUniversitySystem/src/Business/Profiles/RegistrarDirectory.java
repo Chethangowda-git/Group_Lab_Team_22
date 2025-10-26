@@ -33,4 +33,7 @@ public class RegistrarDirectory {
         }
         return null;
     }
+    public ArrayList<RegistrarProfile> getRegistrarList() {
+    return registrarlist;
+}
 }
