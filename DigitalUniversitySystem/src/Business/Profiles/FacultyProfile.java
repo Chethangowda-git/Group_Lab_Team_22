@@ -6,16 +6,26 @@ package Business.Profiles;
 
 import Business.Person.Person;
 
-/**
- *
- * @author chethan
- */
 public class FacultyProfile extends Profile {
     
-    // We don't need to store University Model faculty - just use when needed
+    // Link to University Model Faculty Profile
+    private info5100.university.example.Persona.Faculty.FacultyProfile universityFacultyProfile;
     
     public FacultyProfile(Person p) {
         super(p);
+        
+        // Create University Model Person and FacultyProfile
+        info5100.university.example.Persona.Person universityPerson = 
+            new info5100.university.example.Persona.Person(
+                p.getPersonId(), 
+                p.getEmail(), 
+                p.getFirstName(), 
+                p.getLastName(), 
+                p.getPhone()
+            );
+        
+        this.universityFacultyProfile = 
+            new info5100.university.example.Persona.Faculty.FacultyProfile(universityPerson);
     }
     
     @Override
@@ -23,5 +33,10 @@ public class FacultyProfile extends Profile {
         return "Faculty";
     }
     
-   
+    /**
+     * Get the University Model FacultyProfile for advanced operations
+     */
+    public info5100.university.example.Persona.Faculty.FacultyProfile getUniversityProfile() {
+        return universityFacultyProfile;
+    }
 }

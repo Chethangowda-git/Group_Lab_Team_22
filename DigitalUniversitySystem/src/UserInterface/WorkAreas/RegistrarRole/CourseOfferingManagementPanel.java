@@ -150,7 +150,19 @@ public class CourseOfferingManagementPanel extends javax.swing.JPanel {
 
     private void btnCreateNewActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO: Open create new course offering dialog
-        javax.swing.JOptionPane.showMessageDialog(this, "Create New Offering - Coming in next step!");
+        //javax.swing.JOptionPane.showMessageDialog(this, "Create New Offering - Coming in next step!");
+        // Get currently selected semester
+        String semester = (String) cmbSemester.getSelectedItem();
+
+        if (semester == null || semester.isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Please select a semester first!");
+            return;
+        }
+
+        // Open Create Course Offering Panel
+        CreateCourseOfferingPanel panel = new CreateCourseOfferingPanel(business, registrar, CardSequencePanel, semester);
+        CardSequencePanel.add("CreateOffering", panel);
+        ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);
     }
 
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {
