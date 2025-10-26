@@ -146,10 +146,12 @@ public class RegistrarWorkAreaJPanel extends javax.swing.JPanel {
     ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);
 }
 
-    private void btnInstitutionalReportsActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO: Institutional Reports panel
-        javax.swing.JOptionPane.showMessageDialog(this, "Institutional Reports - Coming soon!");
-    }
+   private void btnInstitutionalReportsActionPerformed(java.awt.event.ActionEvent evt) {
+    // Open Institutional Reports Panel
+    InstitutionalReportsPanel panel = new InstitutionalReportsPanel(business, registrar, CardSequencePanel);
+    CardSequencePanel.add("InstitutionalReports", panel);
+    ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);
+}
 
     private void btnMyProfileActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO: My Profile panel
