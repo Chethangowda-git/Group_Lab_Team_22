@@ -154,9 +154,11 @@ public class RegistrarWorkAreaJPanel extends javax.swing.JPanel {
 }
 
     private void btnMyProfileActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO: My Profile panel
-        javax.swing.JOptionPane.showMessageDialog(this, "My Profile - Coming soon!");
-    }
+    // Open Registrar Profile Panel
+    RegistrarProfilePanel panel = new RegistrarProfilePanel(business, registrar, CardSequencePanel);
+    CardSequencePanel.add("RegistrarProfile", panel);
+    ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);
+}
 
     // Variables declaration
     private javax.swing.JButton btnCourseOfferings;

@@ -2,11 +2,14 @@ package UserInterface.WorkAreas.RegistrarRole;
 
 import Business.Business;
 import Business.Profiles.RegistrarProfile;
+import Business.Profiles.StudentDirectory;
+import Business.Profiles.StudentProfile;
 
 import info5100.university.example.Department.Department;
 import info5100.university.example.CourseSchedule.CourseSchedule;
 import info5100.university.example.CourseSchedule.CourseOffer;
 import info5100.university.example.CourseCatalog.Course;
+import info5100.university.example.Persona.Transcript;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -14,7 +17,8 @@ import java.util.ArrayList;
 
 /**
  * Institutional Reports Panel
- * Generate enrollment reports by department/course
+ * Author: Chethan (NUID: Your NUID)
+ * Generate enrollment reports and GPA distribution by department/course
  */
 public class InstitutionalReportsPanel extends javax.swing.JPanel {
 
@@ -58,7 +62,7 @@ public class InstitutionalReportsPanel extends javax.swing.JPanel {
         
         cmbReportType = new JComboBox<>();
         cmbReportType.addItem("Enrollment by Course");
-        cmbReportType.addItem("GPA Distribution (Coming Soon)");
+        cmbReportType.addItem("GPA Distribution by Program");
         
         // Semester
         lblSemester = new JLabel();
@@ -78,10 +82,10 @@ public class InstitutionalReportsPanel extends javax.swing.JPanel {
         tblReport.setModel(new DefaultTableModel(
             new Object[][] {},
             new String[] {
-                "Course Number", "Course Name", "Department", "Capacity", "Enrolled", "Enrollment %"
+                "Column 1", "Column 2", "Column 3", "Column 4"
             }
         ) {
-            boolean[] canEdit = new boolean[] {false, false, false, false, false, false};
+            boolean[] canEdit = new boolean[] {false, false, false, false};
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit[columnIndex];
             }
@@ -96,22 +100,22 @@ public class InstitutionalReportsPanel extends javax.swing.JPanel {
         summaryPanel.setLayout(null);
         
         lblTotalCourses = new JLabel();
-        lblTotalCourses.setText("Total Courses: 0");
+        lblTotalCourses.setText("Metric 1: 0");
         
         lblTotalEnrollments = new JLabel();
-        lblTotalEnrollments.setText("Total Enrollments: 0");
+        lblTotalEnrollments.setText("Metric 2: 0");
         
         lblAvgEnrollment = new JLabel();
-        lblAvgEnrollment.setText("Average Enrollment: 0%");
+        lblAvgEnrollment.setText("Metric 3: 0%");
         
         summaryPanel.add(lblTotalCourses);
-        lblTotalCourses.setBounds(20, 25, 200, 25);
+        lblTotalCourses.setBounds(20, 25, 300, 25);
         
         summaryPanel.add(lblTotalEnrollments);
-        lblTotalEnrollments.setBounds(20, 50, 200, 25);
+        lblTotalEnrollments.setBounds(20, 50, 300, 25);
         
         summaryPanel.add(lblAvgEnrollment);
-        lblAvgEnrollment.setBounds(250, 25, 200, 25);
+        lblAvgEnrollment.setBounds(330, 25, 300, 25);
         
         // Back Button
         btnBack = new JButton();
@@ -128,22 +132,22 @@ public class InstitutionalReportsPanel extends javax.swing.JPanel {
         lblReportType.setBounds(30, 70, 100, 25);
         
         add(cmbReportType);
-        cmbReportType.setBounds(140, 70, 200, 25);
+        cmbReportType.setBounds(140, 70, 220, 25);
         
         add(lblSemester);
-        lblSemester.setBounds(370, 70, 80, 25);
+        lblSemester.setBounds(390, 70, 80, 25);
         
         add(cmbSemester);
-        cmbSemester.setBounds(460, 70, 150, 25);
+        cmbSemester.setBounds(480, 70, 150, 25);
         
         add(btnGenerate);
-        btnGenerate.setBounds(630, 70, 150, 25);
+        btnGenerate.setBounds(650, 70, 150, 25);
         
         add(scrollPane);
-        scrollPane.setBounds(30, 110, 750, 300);
+        scrollPane.setBounds(30, 110, 770, 300);
         
         add(summaryPanel);
-        summaryPanel.setBounds(30, 420, 750, 90);
+        summaryPanel.setBounds(30, 420, 770, 90);
         
         add(btnBack);
         btnBack.setBounds(30, 530, 100, 35);
@@ -160,15 +164,17 @@ public class InstitutionalReportsPanel extends javax.swing.JPanel {
         
         if ("Enrollment by Course".equals(reportType)) {
             generateEnrollmentReport();
-        } else {
-            JOptionPane.showMessageDialog(this, "This report type is not yet implemented.");
+        } else if ("GPA Distribution by Program".equals(reportType)) {
+            generateGPADistributionReport();
         }
     }
     
     private void generateEnrollmentReport() {
-        // Clear table
         DefaultTableModel model = (DefaultTableModel) tblReport.getModel();
         model.setRowCount(0);
+        model.setColumnIdentifiers(new String[] {
+            "Course Number", "Course Name", "Department", "Capacity", "Enrolled", "Enrollment %"
+        });
         
         String selectedSemester = (String) cmbSemester.getSelectedItem();
         boolean allSemesters = "All Semesters".equals(selectedSemester);
@@ -180,78 +186,131 @@ public class InstitutionalReportsPanel extends javax.swing.JPanel {
         int totalEnrollments = 0;
         int totalCapacity = 0;
         
-        // If specific semester selected
+        CourseSchedule schedule;
         if (!allSemesters) {
-            CourseSchedule schedule = dept.getCourseSchedule(selectedSemester);
-            
-            if (schedule == null) {
-                JOptionPane.showMessageDialog(this, "No data found for " + selectedSemester);
-                return;
-            }
-            
-            ArrayList<CourseOffer> offerings = schedule.getCourseOffers();
-            
-            for (CourseOffer offer : offerings) {
-                Object[] row = new Object[6];
-                
-                Course course = offer.getSubjectCourse();
-                int capacity = offer.getCapacity();
-                int enrolled = offer.getEnrolledCount();
-                double enrollmentPercent = capacity > 0 ? (enrolled * 100.0 / capacity) : 0;
-                
-                row[0] = course.getCOurseNumber();
-                row[1] = course.getName();
-                row[2] = departmentName;
-                row[3] = capacity;
-                row[4] = enrolled;
-                row[5] = String.format("%.1f%%", enrollmentPercent);
-                
-                model.addRow(row);
-                
-                totalCourses++;
-                totalEnrollments += enrolled;
-                totalCapacity += capacity;
-            }
+            schedule = dept.getCourseSchedule(selectedSemester);
         } else {
-            // All semesters - for now just Fall2025
-            // You can expand this to loop through multiple semesters
-            CourseSchedule schedule = dept.getCourseSchedule("Fall2025");
-            
-            if (schedule != null) {
-                ArrayList<CourseOffer> offerings = schedule.getCourseOffers();
-                
-                for (CourseOffer offer : offerings) {
-                    Object[] row = new Object[6];
-                    
-                    Course course = offer.getSubjectCourse();
-                    int capacity = offer.getCapacity();
-                    int enrolled = offer.getEnrolledCount();
-                    double enrollmentPercent = capacity > 0 ? (enrolled * 100.0 / capacity) : 0;
-                    
-                    row[0] = course.getCOurseNumber();
-                    row[1] = course.getName();
-                    row[2] = departmentName;
-                    row[3] = capacity;
-                    row[4] = enrolled;
-                    row[5] = String.format("%.1f%%", enrollmentPercent);
-                    
-                    model.addRow(row);
-                    
-                    totalCourses++;
-                    totalEnrollments += enrolled;
-                    totalCapacity += capacity;
-                }
-            }
+            schedule = dept.getCourseSchedule("Fall2025");
         }
         
-        // Update summary
+        if (schedule == null) {
+            JOptionPane.showMessageDialog(this, "No data found");
+            return;
+        }
+        
+        ArrayList<CourseOffer> offerings = schedule.getCourseOffers();
+        
+        for (CourseOffer offer : offerings) {
+            Object[] row = new Object[6];
+            
+            Course course = offer.getSubjectCourse();
+            int capacity = offer.getCapacity();
+            int enrolled = offer.getEnrolledCount();
+            double enrollmentPercent = capacity > 0 ? (enrolled * 100.0 / capacity) : 0;
+            
+            row[0] = course.getCOurseNumber();
+            row[1] = course.getName();
+            row[2] = departmentName;
+            row[3] = capacity;
+            row[4] = enrolled;
+            row[5] = String.format("%.1f%%", enrollmentPercent);
+            
+            model.addRow(row);
+            
+            totalCourses++;
+            totalEnrollments += enrolled;
+            totalCapacity += capacity;
+        }
+        
         double avgEnrollmentPercent = totalCapacity > 0 ? (totalEnrollments * 100.0 / totalCapacity) : 0;
         
         lblTotalCourses.setText("Total Courses: " + totalCourses);
         lblTotalEnrollments.setText("Total Enrollments: " + totalEnrollments);
         lblAvgEnrollment.setText("Average Enrollment: " + String.format("%.1f%%", avgEnrollmentPercent));
+    }
+    
+    private void generateGPADistributionReport() {
+        DefaultTableModel model = (DefaultTableModel) tblReport.getModel();
+        model.setRowCount(0);
+        model.setColumnIdentifiers(new String[] {
+            "GPA Range", "Number of Students", "Percentage", "Status"
+        });
         
-        System.out.println("✅ Generated enrollment report: " + totalCourses + " courses, " + totalEnrollments + " enrollments");
+        StudentDirectory sd = business.getStudentDirectory();
+        ArrayList<StudentProfile> students = sd.getStudentList();
+        
+        int range_4_0 = 0;
+        int range_3_7_to_3_99 = 0;
+        int range_3_3_to_3_69 = 0;
+        int range_3_0_to_3_29 = 0;
+        int range_2_7_to_2_99 = 0;
+        int range_2_0_to_2_69 = 0;
+        int range_below_2_0 = 0;
+        int noGPA = 0;
+        int totalStudents = 0;
+        
+        for (StudentProfile sp : students) {
+            info5100.university.example.Persona.StudentProfile univStudent = sp.getUniversityProfile();
+            Transcript transcript = univStudent.getTranscript();
+            
+            float gpa = transcript.calculateOverallGPA();
+            int credits = transcript.getTotalCreditHours();
+            
+            if (credits == 0) {
+                noGPA++;
+                continue;
+            }
+            
+            if (gpa == 4.0f) {
+                range_4_0++;
+            } else if (gpa >= 3.7f) {
+                range_3_7_to_3_99++;
+            } else if (gpa >= 3.3f) {
+                range_3_3_to_3_69++;
+            } else if (gpa >= 3.0f) {
+                range_3_0_to_3_29++;
+            } else if (gpa >= 2.7f) {
+                range_2_7_to_2_99++;
+            } else if (gpa >= 2.0f) {
+                range_2_0_to_2_69++;
+            } else {
+                range_below_2_0++;
+            }
+            
+            totalStudents++;
+        }
+        
+        addGPARow(model, "4.0 (A - Perfect)", range_4_0, totalStudents, "Excellent");
+        addGPARow(model, "3.7 - 3.99 (A-)", range_3_7_to_3_99, totalStudents, "Excellent");
+        addGPARow(model, "3.3 - 3.69 (B+)", range_3_3_to_3_69, totalStudents, "Good Standing");
+        addGPARow(model, "3.0 - 3.29 (B)", range_3_0_to_3_29, totalStudents, "Good Standing");
+        addGPARow(model, "2.7 - 2.99 (B-)", range_2_7_to_2_99, totalStudents, "Warning Risk");
+        addGPARow(model, "2.0 - 2.69 (C Range)", range_2_0_to_2_69, totalStudents, "Academic Warning");
+        addGPARow(model, "Below 2.0 (F)", range_below_2_0, totalStudents, "Academic Probation");
+        
+        if (noGPA > 0) {
+            addGPARow(model, "No GPA (No courses)", noGPA, totalStudents + noGPA, "N/A");
+        }
+        
+        lblTotalCourses.setText("Total Students with GPA: " + totalStudents);
+        lblTotalEnrollments.setText("Students without GPA: " + noGPA);
+        
+        if (totalStudents > 0) {
+            int goodStanding = range_4_0 + range_3_7_to_3_99 + range_3_3_to_3_69 + range_3_0_to_3_29;
+            double percentGood = (goodStanding * 100.0) / totalStudents;
+            lblAvgEnrollment.setText("Good Standing: " + String.format("%.1f%%", percentGood));
+        } else {
+            lblAvgEnrollment.setText("Good Standing: N/A");
+        }
+    }
+    
+    private void addGPARow(DefaultTableModel model, String range, int count, int total, String status) {
+        Object[] row = new Object[4];
+        row[0] = range;
+        row[1] = count;
+        row[2] = total > 0 ? String.format("%.1f%%", (count * 100.0 / total)) : "0%";
+        row[3] = status;
+        model.addRow(row);
     }
     
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {

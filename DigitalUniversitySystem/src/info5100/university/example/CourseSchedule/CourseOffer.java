@@ -19,6 +19,8 @@ public class CourseOffer {
     Course course;
     ArrayList<Seat> seatlist;
     FacultyAssignment facultyassignment;
+    String room;
+    String scheduleTime;
 
     public CourseOffer(Course c) {
         course = c;
@@ -109,6 +111,34 @@ public class CourseOffer {
             }
         }
         return count;
+    }
+
+    /**
+     * Get room assignment
+     */
+    public String getRoom() {
+        return room;
+    }
+
+    /**
+     * Set room assignment
+     */
+    public void setRoom(String room) {
+        this.room = room;
+    }
+
+    /**
+     * Get schedule time
+     */
+    public String getScheduleTime() {
+        return scheduleTime;
+    }
+
+    /**
+     * Set schedule time
+     */
+    public void setScheduleTime(String scheduleTime) {
+        this.scheduleTime = scheduleTime;
     }
 
 }
