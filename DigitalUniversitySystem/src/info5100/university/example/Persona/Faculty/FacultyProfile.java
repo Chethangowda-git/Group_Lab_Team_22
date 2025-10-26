@@ -50,6 +50,9 @@ public class FacultyProfile {
     public FacultyProfile getCourseOffer(String courseid){
         return null; //complete it later
     }
+    public Person getPerson() {
+    return person;
+}
 
     public boolean isMatch(String id) {
         if (person.getPersonId().equals(id)) {
