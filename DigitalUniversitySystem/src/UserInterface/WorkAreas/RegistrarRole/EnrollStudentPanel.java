@@ -7,6 +7,7 @@ import info5100.university.example.Department.Department;
 import info5100.university.example.CourseSchedule.CourseSchedule;
 import info5100.university.example.CourseSchedule.CourseOffer;
 import info5100.university.example.CourseSchedule.CourseLoad;
+import info5100.university.example.CourseSchedule.SeatAssignment;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -195,6 +196,22 @@ public class EnrollStudentPanel extends javax.swing.JPanel {
         courseLoad = universityStudent.newCourseLoad(semester);
         System.out.println("✅ Created new course load for " + semester);
     }
+    
+    // 4.5 CHECK IF STUDENT IS ALREADY ENROLLED IN THIS COURSE
+ArrayList<SeatAssignment> currentEnrollments = courseLoad.getSeatAssignments();
+
+for (SeatAssignment sa : currentEnrollments) {
+    String enrolledCourseNumber = sa.getAssociatedCourse().getCOurseNumber();
+    if (enrolledCourseNumber.equals(courseNumber)) {
+        lblMessage.setText("⚠️ Student is already enrolled in " + courseNumber + "!");
+        JOptionPane.showMessageDialog(this,
+            "Student is already enrolled in this course!\n\n" +
+            "Course: " + courseNumber,
+            "Duplicate Enrollment",
+            JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+}
     
     // 5. ENROLL STUDENT (Admin override - no credit limit check)
     info5100.university.example.CourseSchedule.SeatAssignment sa = 

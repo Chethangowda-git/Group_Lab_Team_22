@@ -90,5 +90,45 @@ public class Transcript {
         return temp2;
 
     }
+/**
+ * Calculate overall GPA across all semesters
+ */
+public float calculateOverallGPA() {
+    float totalQualityPoints = 0;
+    int totalCreditHours = 0;
+    
+    // Sum quality points and credits from all course loads
+    for (CourseLoad cl : courseloadlist.values()) {
+        totalQualityPoints += cl.getSemesterScore();
+        totalCreditHours += cl.getTotalCreditHours();
+    }
+    
+    if (totalCreditHours == 0) return 0.0f;
+    
+    return totalQualityPoints / totalCreditHours;
+}
 
+/**
+ * Get overall academic standing
+ */
+public String getOverallAcademicStanding() {
+    float overallGPA = calculateOverallGPA();
+    
+    if (overallGPA >= 3.0) {
+        return "Good Standing";
+    } else {
+        return "Academic Probation";
+    }
+}
+
+/**
+ * Get total credit hours completed across all semesters
+ */
+public int getTotalCreditHours() {
+    int total = 0;
+    for (CourseLoad cl : courseloadlist.values()) {
+        total += cl.getTotalCreditHours();
+    }
+    return total;
+}
 }
