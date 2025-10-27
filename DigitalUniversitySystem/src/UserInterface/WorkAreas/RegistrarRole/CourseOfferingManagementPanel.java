@@ -10,23 +10,27 @@ import javax.swing.JLabel;
 import javax.swing.JComboBox;
 import javax.swing.table.DefaultTableModel;
 
-// University Model imports
 import info5100.university.example.Department.Department;
 import info5100.university.example.CourseSchedule.CourseSchedule;
 import info5100.university.example.CourseSchedule.CourseOffer;
 import info5100.university.example.CourseCatalog.Course;
 import info5100.university.example.Persona.Person;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 
 /**
  * Course Offering Management Panel
- * Registrar can view, create, and manage course offerings
+ * Registrar can view, create, and edit course offerings
+ * 
+ * @author chethan
  */
 public class CourseOfferingManagementPanel extends javax.swing.JPanel {
 
     JPanel CardSequencePanel;
     Business business;
     RegistrarProfile registrar;
+    
+    CourseOffer selectedCourseOffer = null;
     
     // UI Components
     private JLabel lblTitle;
@@ -35,6 +39,7 @@ public class CourseOfferingManagementPanel extends javax.swing.JPanel {
     private JButton btnRefresh;
     private JScrollPane scrollPane;
     private JTable tblCourseOfferings;
+    private JButton btnEdit;
     private JButton btnCreateNew;
     private JButton btnBack;
     
@@ -74,7 +79,7 @@ public class CourseOfferingManagementPanel extends javax.swing.JPanel {
             }
         });
         
-        // Create Table with 8 columns (added Room and Schedule Time)
+        // Create Table
         tblCourseOfferings = new JTable();
         tblCourseOfferings.setModel(new DefaultTableModel(
             new Object[][] {},
@@ -91,8 +96,26 @@ public class CourseOfferingManagementPanel extends javax.swing.JPanel {
             }
         });
         
+        // Add selection listener
+        tblCourseOfferings.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                tblCourseOfferingsSelectionChanged();
+            }
+        });
+        
         scrollPane = new JScrollPane();
         scrollPane.setViewportView(tblCourseOfferings);
+        
+        // Edit Button
+        btnEdit = new JButton();
+        btnEdit.setBackground(new java.awt.Color(255, 153, 51));
+        btnEdit.setForeground(java.awt.Color.WHITE);
+        btnEdit.setText("Edit Selected Offering");
+        btnEdit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEditActionPerformed(evt);
+            }
+        });
         
         // Create New Button
         btnCreateNew = new JButton();
@@ -132,6 +155,9 @@ public class CourseOfferingManagementPanel extends javax.swing.JPanel {
         add(scrollPane);
         scrollPane.setBounds(30, 110, 900, 300);
         
+        add(btnEdit);
+        btnEdit.setBounds(550, 430, 180, 35);
+        
         add(btnCreateNew);
         btnCreateNew.setBounds(750, 430, 180, 35);
         
@@ -140,18 +166,13 @@ public class CourseOfferingManagementPanel extends javax.swing.JPanel {
     }
     
     private void loadSemesters() {
-        // Clear existing items
         cmbSemester.removeAllItems();
-        
-        // Add semesters
         cmbSemester.addItem("Fall2025");
-        // Add more semesters as needed
         
-        System.out.println("✅ Loaded semesters into dropdown");
+        System.out.println("Loaded semesters into dropdown");
     }
     
     private void loadCourseOfferings() {
-        // Get selected semester
         String selectedSemester = (String) cmbSemester.getSelectedItem();
         
         if (selectedSemester == null || selectedSemester.isEmpty()) {
@@ -163,51 +184,42 @@ public class CourseOfferingManagementPanel extends javax.swing.JPanel {
         DefaultTableModel model = (DefaultTableModel) tblCourseOfferings.getModel();
         model.setRowCount(0);
         
-        // Get Department from Business
         Department dept = business.getDepartment();
-        
-        // Get CourseSchedule for selected semester
         CourseSchedule schedule = dept.getCourseSchedule(selectedSemester);
         
         if (schedule == null) {
-            System.out.println("⚠️ No schedule found for semester: " + selectedSemester);
+            System.out.println("No schedule found for semester: " + selectedSemester);
             javax.swing.JOptionPane.showMessageDialog(this, 
                 "No course schedule found for " + selectedSemester);
             return;
         }
         
-        // Get all course offerings
         ArrayList<CourseOffer> offerings = schedule.getCourseOffers();
         
         if (offerings == null || offerings.isEmpty()) {
-            System.out.println("⚠️ No course offerings in this semester");
-            javax.swing.JOptionPane.showMessageDialog(this, 
-                "No course offerings found for " + selectedSemester);
+            System.out.println("No course offerings in this semester");
             return;
         }
         
-        System.out.println("✅ Found " + offerings.size() + " course offerings");
+        System.out.println("Found " + offerings.size() + " course offerings");
         
-        // Populate table with real data
+        // Populate table
         for (CourseOffer offering : offerings) {
-            Object[] row = new Object[8];  // Updated to 8 columns
+            Object[] row = new Object[8];
             
-            // Get course details
             Course course = offering.getSubjectCourse();
-            row[0] = course.getCOurseNumber();      // Course Number
-            row[1] = course.getName();              // Course Name
-            row[2] = course.getCredits();           // Credits
+            if (course == null) continue;
             
-            // Get faculty (if assigned)
+            row[0] = course.getCOurseNumber();
+            row[1] = course.getName();
+            row[2] = course.getCredits();
+            
+            // Get faculty
             try {
                 info5100.university.example.Persona.Faculty.FacultyProfile universityFaculty = offering.getFacultyProfile();
-                if (universityFaculty != null) {
+                if (universityFaculty != null && universityFaculty.getPerson() != null) {
                     Person facultyPerson = universityFaculty.getPerson();
-                    if (facultyPerson != null) {
-                        row[3] = facultyPerson.getFullName();
-                    } else {
-                        row[3] = "Not Assigned";
-                    }
+                    row[3] = facultyPerson.getFullName();
                 } else {
                     row[3] = "Not Assigned";
                 }
@@ -215,32 +227,78 @@ public class CourseOfferingManagementPanel extends javax.swing.JPanel {
                 row[3] = "Not Assigned";
             }
             
-            // Get capacity and enrolled count
             row[4] = offering.getCapacity();
             row[5] = offering.getEnrolledCount();
-            
-            // Get room and schedule time (NEW!)
             row[6] = offering.getRoom() != null ? offering.getRoom() : "TBD";
             row[7] = offering.getScheduleTime() != null ? offering.getScheduleTime() : "TBD";
             
             model.addRow(row);
         }
         
-        System.out.println("✅ Loaded " + offerings.size() + " course offerings into table");
+        System.out.println("Loaded " + offerings.size() + " course offerings into table");
     }
     
     private void cmbSemesterActionPerformed(java.awt.event.ActionEvent evt) {
-        // When semester changes, reload course offerings
         loadCourseOfferings();
     }
 
     private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {
-        // Refresh the table
         loadCourseOfferings();
+    }
+    
+    /**
+     * Handle table selection change
+     */
+    private void tblCourseOfferingsSelectionChanged() {
+        int selectedRow = tblCourseOfferings.getSelectedRow();
+        
+        if (selectedRow < 0) {
+            selectedCourseOffer = null;
+            return;
+        }
+        
+        String courseNumber = (String) tblCourseOfferings.getValueAt(selectedRow, 0);
+        
+        // Find the CourseOffer object
+        String semester = (String) cmbSemester.getSelectedItem();
+        if (semester == null) return;
+        
+        Department dept = business.getDepartment();
+        CourseSchedule schedule = dept.getCourseSchedule(semester);
+        
+        if (schedule != null) {
+            ArrayList<CourseOffer> offerings = schedule.getCourseOffers();
+            
+            for (CourseOffer offer : offerings) {
+                Course course = offer.getSubjectCourse();
+                if (course != null && course.getCOurseNumber().equals(courseNumber)) {
+                    selectedCourseOffer = offer;
+                    System.out.println("Selected: " + courseNumber);
+                    break;
+                }
+            }
+        }
+    }
+    
+    /**
+     * Open Edit panel for selected course offering
+     */
+    private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {
+        if (selectedCourseOffer == null) {
+            JOptionPane.showMessageDialog(this,
+                "Please select a course offering from the table first!",
+                "No Selection",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        EditCourseOfferingPanel panel = new EditCourseOfferingPanel(
+            business, registrar, selectedCourseOffer, CardSequencePanel);
+        CardSequencePanel.add("EditOffering", panel);
+        ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);
     }
 
     private void btnCreateNewActionPerformed(java.awt.event.ActionEvent evt) {
-        // Get currently selected semester
         String semester = (String) cmbSemester.getSelectedItem();
         
         if (semester == null || semester.isEmpty()) {
@@ -248,14 +306,12 @@ public class CourseOfferingManagementPanel extends javax.swing.JPanel {
             return;
         }
         
-        // Open Create Course Offering Panel
         CreateCourseOfferingPanel panel = new CreateCourseOfferingPanel(business, registrar, CardSequencePanel, semester);
         CardSequencePanel.add("CreateOffering", panel);
         ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);
     }
 
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {
-        // Go back to Registrar main menu
         CardSequencePanel.remove(this);
         ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);
     }

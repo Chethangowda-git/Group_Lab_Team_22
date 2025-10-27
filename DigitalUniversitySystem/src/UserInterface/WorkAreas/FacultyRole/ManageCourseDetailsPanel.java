@@ -17,6 +17,8 @@ import java.util.ArrayList;
 /**
  * Manage Course Details Panel 
  * Faculty can view enrolled students and assign grades
+ * 
+ * @author chethan
  */
 public class ManageCourseDetailsPanel extends javax.swing.JPanel {
 
@@ -28,7 +30,6 @@ public class ManageCourseDetailsPanel extends javax.swing.JPanel {
     SeatAssignment selectedSeatAssignment = null;
     StudentProfile selectedStudent = null;
 
-    // UI Components
     private JLabel lblTitle;
     private JLabel lblCourseInfo;
     private JLabel lblClassGPA;
@@ -53,30 +54,25 @@ public class ManageCourseDetailsPanel extends javax.swing.JPanel {
     }
 
     private void initComponents() {
-        // Title
         lblTitle = new JLabel();
         lblTitle.setFont(new java.awt.Font("Arial", 1, 24));
         Course course = courseOffer.getSubjectCourse();
         lblTitle.setText("Manage: " + course.getCOurseNumber() + " - " + course.getName());
 
-        // Course Info
         lblCourseInfo = new JLabel();
         lblCourseInfo.setFont(new java.awt.Font("Dialog", 0, 14));
         lblCourseInfo.setText(String.format("Credits: %d | Capacity: %d | Enrolled: %d",
                 course.getCredits(), courseOffer.getCapacity(), courseOffer.getEnrolledCount()));
 
-        // Class GPA
         lblClassGPA = new JLabel();
         lblClassGPA.setFont(new java.awt.Font("Dialog", 1, 14));
         lblClassGPA.setForeground(new java.awt.Color(0, 102, 204));
         lblClassGPA.setText("Class GPA: N/A");
 
-        // Enrolled Students Label
         lblEnrolledStudents = new JLabel();
         lblEnrolledStudents.setFont(new java.awt.Font("Dialog", 1, 14));
         lblEnrolledStudents.setText("Enrolled Students:");
 
-        // Students Table
         tblStudents = new JTable();
         tblStudents.setModel(new DefaultTableModel(
                 new Object[][]{},
@@ -100,7 +96,6 @@ public class ManageCourseDetailsPanel extends javax.swing.JPanel {
         scrollPane = new JScrollPane();
         scrollPane.setViewportView(tblStudents);
 
-        // Buttons
         btnGradeStudent = new JButton();
         btnGradeStudent.setBackground(new java.awt.Color(102, 153, 255));
         btnGradeStudent.setForeground(new java.awt.Color(255, 255, 255));
@@ -131,7 +126,6 @@ public class ManageCourseDetailsPanel extends javax.swing.JPanel {
         btnBack.setText("<< Back");
         btnBack.addActionListener(evt -> btnBackActionPerformed(evt));
 
-        // Layout
         setLayout(null);
 
         add(lblTitle);
@@ -175,11 +169,10 @@ public class ManageCourseDetailsPanel extends javax.swing.JPanel {
         ArrayList<Seat> seats = courseOffer.getSeatList();
 
         if (seats == null || seats.isEmpty()) {
-            System.out.println("⚠️ No seats in this course");
+            System.out.println("No seats in this course");
             return;
         }
 
-        // Get all students to match with course loads
         StudentDirectory sd = business.getStudentDirectory();
         ArrayList<StudentProfile> allStudents = sd.getStudentList();
 
@@ -195,28 +188,22 @@ public class ManageCourseDetailsPanel extends javax.swing.JPanel {
 
                 Object[] row = new Object[6];
 
-                // Get course load from seat assignment
                 info5100.university.example.CourseSchedule.CourseLoad courseLoad = sa.getCourseLoad();
 
-                // Find student by searching through all students and checking their transcripts
                 String studentName = "Unknown Student";
                 String studentId = "Unknown";
 
                 if (courseLoad != null) {
-                    // Search through all students
                     boolean found = false;
                     for (StudentProfile sp : allStudents) {
                         info5100.university.example.Persona.StudentProfile univStudent = sp.getUniversityProfile();
                         info5100.university.example.Persona.Transcript transcript = univStudent.getTranscript();
 
-                        // Get all seat assignments for this student
                         ArrayList<info5100.university.example.CourseSchedule.SeatAssignment> studentAssignments =
                                 transcript.getCourseList();
 
-                        // Check if this student has this specific seat assignment
                         if (studentAssignments != null) {
                             for (info5100.university.example.CourseSchedule.SeatAssignment studentSa : studentAssignments) {
-                                // Match by object reference
                                 if (studentSa == sa) {
                                     studentName = sp.getPerson().getFullName();
                                     studentId = sp.getPerson().getPersonId();
@@ -243,7 +230,7 @@ public class ManageCourseDetailsPanel extends javax.swing.JPanel {
                 float qualityPoints = gradePoints * credits;
                 row[4] = gradePoints > 0 ? String.format("%.2f", qualityPoints) : "N/A";
 
-                row[5] = "-";  // Rank - will calculate after all loaded
+                row[5] = "-";
 
                 model.addRow(row);
                 enrolledCount++;
@@ -255,7 +242,6 @@ public class ManageCourseDetailsPanel extends javax.swing.JPanel {
             }
         }
 
-        // Calculate and display class GPA
         if (gradedCount > 0) {
             double classGPA = totalGradePoints / gradedCount;
             lblClassGPA.setText(String.format("Class GPA: %.2f", classGPA));
@@ -263,7 +249,7 @@ public class ManageCourseDetailsPanel extends javax.swing.JPanel {
             lblClassGPA.setText("Class GPA: N/A (No grades assigned)");
         }
 
-        System.out.println("✅ Loaded " + enrolledCount + " enrolled students");
+        System.out.println("Loaded " + enrolledCount + " enrolled students");
     }
 
     private void tblStudentsSelectionChanged() {
@@ -275,14 +261,11 @@ public class ManageCourseDetailsPanel extends javax.swing.JPanel {
             return;
         }
 
-        // Get student ID from table
         String studentId = (String) tblStudents.getValueAt(selectedRow, 1);
 
-        // Find the student profile
         StudentDirectory sd = business.getStudentDirectory();
         selectedStudent = sd.findStudent(studentId);
 
-        // Get the seat assignment for selected row
         ArrayList<Seat> seats = courseOffer.getSeatList();
         int currentRow = 0;
 
@@ -303,11 +286,9 @@ public class ManageCourseDetailsPanel extends javax.swing.JPanel {
             return;
         }
 
-        // Get current grade
         String currentGrade = selectedSeatAssignment.getLetterGrade();
         String currentGradeDisplay = currentGrade != null ? currentGrade : "Not Graded";
 
-        // Show grade selection dialog
         String[] gradeOptions = {
             "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "F"
         };
@@ -322,17 +303,14 @@ public class ManageCourseDetailsPanel extends javax.swing.JPanel {
                 currentGrade != null ? currentGrade : "B"
         );
 
-        // If user cancelled or didn't select anything
         if (selectedGrade == null) {
             return;
         }
 
-        // Assign the grade
         selectedSeatAssignment.setLetterGrade(selectedGrade);
 
-        System.out.println("✅ Assigned grade " + selectedGrade + " to student");
+        System.out.println("Assigned grade " + selectedGrade + " to student");
 
-        // Show confirmation
         JOptionPane.showMessageDialog(this,
                 "Grade assigned successfully!\n\n"
                 + "Letter Grade: " + selectedGrade + "\n"
@@ -340,7 +318,6 @@ public class ManageCourseDetailsPanel extends javax.swing.JPanel {
                 "Success",
                 JOptionPane.INFORMATION_MESSAGE);
 
-        // Refresh the table to show new grade
         loadEnrolledStudents();
     }
 
@@ -367,10 +344,8 @@ public class ManageCourseDetailsPanel extends javax.swing.JPanel {
     }
 
     private void btnViewRankingsActionPerformed(java.awt.event.ActionEvent evt) {
-        // Calculate rankings and update table
         DefaultTableModel model = (DefaultTableModel) tblStudents.getModel();
 
-        // Get all rows and sort by grade points (descending)
         int rowCount = model.getRowCount();
 
         if (rowCount == 0) {
@@ -411,7 +386,7 @@ public class ManageCourseDetailsPanel extends javax.swing.JPanel {
 
             int credits = courseOffer.getSubjectCourse().getCredits();
             row[4] = String.format("%.2f", data.gradePoints * credits);
-            row[5] = "#" + rank;  // Rank
+            row[5] = "#" + rank;
 
             model.addRow(row);
 
@@ -432,10 +407,9 @@ public class ManageCourseDetailsPanel extends javax.swing.JPanel {
                 "Rankings Generated",
                 JOptionPane.INFORMATION_MESSAGE);
 
-        System.out.println("✅ Generated rankings for " + studentGrades.size() + " students");
+        System.out.println("Generated rankings for " + studentGrades.size() + " students");
     }
 
-    // Inner class to help with sorting
     private class StudentGradeData {
         String name;
         String id;

@@ -3,7 +3,6 @@ package UserInterface.WorkAreas.FacultyRole;
 import Business.Business;
 import Business.Profiles.FacultyProfile;
 
-import info5100.university.example.Persona.Faculty.FacultyAssignment;
 import info5100.university.example.CourseSchedule.CourseOffer;
 import info5100.university.example.CourseSchedule.CourseSchedule;
 import info5100.university.example.CourseCatalog.Course;
@@ -14,17 +13,18 @@ import javax.swing.table.DefaultTableModel;
 import java.util.ArrayList;
 
 /**
- * View My Courses Panel with Mode Support Mode: MANAGE_COURSES or
- * MANAGE_STUDENTS
+ * View My Courses Panel with Mode Support
+ * Mode: MANAGE_COURSES or MANAGE_STUDENTS
+ * 
+ * @author chethan
  */
 public class ViewMyCoursesPanel extends javax.swing.JPanel {
 
     JPanel CardSequencePanel;
     Business business;
     FacultyProfile faculty;
-    String mode; // "MANAGE_COURSES" or "MANAGE_STUDENTS"
+    String mode;
 
-    // UI Components
     private JLabel lblTitle;
     private JLabel lblWelcome;
     private JLabel lblInstruction;
@@ -33,11 +33,6 @@ public class ViewMyCoursesPanel extends javax.swing.JPanel {
     private JButton btnRefresh;
     private JButton btnBack;
 
-    /**
-     * Constructor with mode
-     *
-     * @param mode "MANAGE_COURSES" or "MANAGE_STUDENTS"
-     */
     public ViewMyCoursesPanel(Business b, FacultyProfile fp, JPanel clp, String mode) {
         business = b;
         faculty = fp;
@@ -49,7 +44,6 @@ public class ViewMyCoursesPanel extends javax.swing.JPanel {
     }
 
     private void initComponents() {
-        // Title (changes based on mode)
         lblTitle = new JLabel();
         lblTitle.setFont(new java.awt.Font("Arial", 1, 24));
 
@@ -59,12 +53,10 @@ public class ViewMyCoursesPanel extends javax.swing.JPanel {
             lblTitle.setText("Manage Students");
         }
 
-        // Welcome message
         lblWelcome = new JLabel();
         lblWelcome.setFont(new java.awt.Font("Dialog", 0, 14));
         lblWelcome.setText("Courses taught by: " + faculty.getPerson().getFullName());
 
-        // Instruction (changes based on mode)
         lblInstruction = new JLabel();
         lblInstruction.setFont(new java.awt.Font("Dialog", 2, 12));
         lblInstruction.setForeground(new java.awt.Color(102, 102, 102));
@@ -75,7 +67,6 @@ public class ViewMyCoursesPanel extends javax.swing.JPanel {
             lblInstruction.setText("Double-click a course to view students, assign grades, and view rankings");
         }
 
-        // Courses Table
         tblCourses = new JTable();
         tblCourses.setModel(new DefaultTableModel(
                 new Object[][]{},
@@ -90,7 +81,6 @@ public class ViewMyCoursesPanel extends javax.swing.JPanel {
             }
         });
 
-        // Add double-click listener
         tblCourses.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (evt.getClickCount() == 2) {
@@ -102,17 +92,14 @@ public class ViewMyCoursesPanel extends javax.swing.JPanel {
         scrollPane = new JScrollPane();
         scrollPane.setViewportView(tblCourses);
 
-        // Refresh Button
         btnRefresh = new JButton();
         btnRefresh.setText("Refresh");
         btnRefresh.addActionListener(evt -> btnRefreshActionPerformed(evt));
 
-        // Back Button
         btnBack = new JButton();
         btnBack.setText("<< Back");
         btnBack.addActionListener(evt -> btnBackActionPerformed(evt));
 
-        // Layout
         setLayout(null);
 
         add(lblTitle);
@@ -144,7 +131,7 @@ public class ViewMyCoursesPanel extends javax.swing.JPanel {
         CourseSchedule schedule = dept.getCourseSchedule("Fall2025");
 
         if (schedule == null) {
-            System.out.println("⚠️ No schedule found");
+            System.out.println("No schedule found");
             return;
         }
 
@@ -189,7 +176,7 @@ public class ViewMyCoursesPanel extends javax.swing.JPanel {
             model.addRow(row);
         }
 
-        System.out.println("✅ Found " + coursesFound + " courses");
+        System.out.println("Found " + coursesFound + " courses");
     }
 
     private void tblCoursesDoubleClicked() {
@@ -219,14 +206,12 @@ public class ViewMyCoursesPanel extends javax.swing.JPanel {
             return;
         }
 
-        // DIFFERENT BEHAVIOR BASED ON MODE!
+        // Different behavior based on mode
         if ("MANAGE_COURSES".equals(mode)) {
-            // Open Edit Course Details Panel (to be created)
             EditCourseDetailsPanel panel = new EditCourseDetailsPanel(business, faculty, selectedOffer, CardSequencePanel);
             CardSequencePanel.add("EditCourse", panel);
             ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);
         } else {
-            // Open Manage Course Details Panel (student grading)
             ManageCourseDetailsPanel panel = new ManageCourseDetailsPanel(business, faculty, selectedOffer, CardSequencePanel);
             CardSequencePanel.add("ManageCourseDetails", panel);
             ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);

@@ -12,7 +12,10 @@ import javax.swing.table.DefaultTableModel;
 import java.util.ArrayList;
 
 /**
- * Student Progress Panel - Shows current semester progress
+ * Student Progress Panel
+ * Faculty can view student's current semester progress
+ * 
+ * @author chethan
  */
 public class StudentProgressPanel extends javax.swing.JPanel {
 
@@ -42,31 +45,25 @@ public class StudentProgressPanel extends javax.swing.JPanel {
     }
     
     private void initComponents() {
-        // Title
         lblTitle = new JLabel();
         lblTitle.setFont(new java.awt.Font("Arial", 1, 24));
         lblTitle.setText("Student Progress Report");
         
-        // Student Info
         lblStudentInfo = new JLabel();
         lblStudentInfo.setFont(new java.awt.Font("Dialog", 1, 16));
         lblStudentInfo.setText("Student: " + student.getPerson().getFullName() + 
                               " (ID: " + student.getPerson().getPersonId() + ")");
         
-        // Current GPA
         lblCurrentGPA = new JLabel();
         lblCurrentGPA.setFont(new java.awt.Font("Dialog", 0, 14));
         lblCurrentGPA.setForeground(new java.awt.Color(0, 102, 204));
         
-        // Credits
         lblCredits = new JLabel();
         lblCredits.setFont(new java.awt.Font("Dialog", 0, 14));
         
-        // Academic Standing
         lblAcademicStanding = new JLabel();
         lblAcademicStanding.setFont(new java.awt.Font("Dialog", 1, 14));
         
-        // Courses Table
         tblCourses = new JTable();
         tblCourses.setModel(new DefaultTableModel(
             new Object[][] {},
@@ -83,7 +80,6 @@ public class StudentProgressPanel extends javax.swing.JPanel {
         scrollPane = new JScrollPane();
         scrollPane.setViewportView(tblCourses);
         
-        // Buttons
         btnViewFullTranscript = new JButton();
         btnViewFullTranscript.setBackground(new java.awt.Color(102, 153, 255));
         btnViewFullTranscript.setForeground(new java.awt.Color(255, 255, 255));
@@ -94,7 +90,6 @@ public class StudentProgressPanel extends javax.swing.JPanel {
         btnBack.setText("<< Back");
         btnBack.addActionListener(evt -> btnBackActionPerformed(evt));
         
-        // Layout
         setLayout(null);
         
         add(lblTitle);
@@ -129,7 +124,6 @@ public class StudentProgressPanel extends javax.swing.JPanel {
         info5100.university.example.Persona.StudentProfile univStudent = student.getUniversityProfile();
         Transcript transcript = univStudent.getTranscript();
         
-        // Get current semester course load
         info5100.university.example.CourseSchedule.CourseLoad currentLoad = transcript.getCurrentCourseLoad();
         
         if (currentLoad == null) {
@@ -167,10 +161,7 @@ public class StudentProgressPanel extends javax.swing.JPanel {
             }
         }
         
-        // Calculate current semester GPA
         float semesterGPA = totalCredits > 0 ? (float)(totalQualityPoints / totalCredits) : 0.0f;
-        
-        // Get overall GPA
         float overallGPA = transcript.calculateOverallGPA();
         
         lblCurrentGPA.setText(String.format("Current Semester GPA: %.2f | Overall GPA: %.2f", 
@@ -178,7 +169,6 @@ public class StudentProgressPanel extends javax.swing.JPanel {
         lblCredits.setText("Credits This Semester: " + totalCredits + 
                           " | Total Credits: " + transcript.getTotalCreditHours());
         
-        // Academic Standing
         String standing = transcript.getOverallAcademicStanding();
         lblAcademicStanding.setText("Academic Standing: " + standing);
         

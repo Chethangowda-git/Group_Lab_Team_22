@@ -10,6 +10,8 @@ import java.util.ArrayList;
 /**
  * Pay Tuition Panel
  * Student can view balance and make payments
+ * 
+ * @author chethan
  */
 public class PayTuitionPanel extends javax.swing.JPanel {
 
@@ -173,7 +175,7 @@ public class PayTuitionPanel extends javax.swing.JPanel {
         student.payTuition(balance);
         
         JOptionPane.showMessageDialog(this,
-            "✅ Payment successful!\n\n" +
+            "Payment successful!\n\n" +
             "Amount paid: $" + String.format("%,d", (int)balance) + "\n" +
             "New balance: $0",
             "Payment Complete",
@@ -214,7 +216,7 @@ public class PayTuitionPanel extends javax.swing.JPanel {
             student.payTuition(amount);
             
             JOptionPane.showMessageDialog(this,
-                "✅ Payment successful!\n\n" +
+                "Payment successful!\n\n" +
                 "Amount paid: $" + String.format("%,d", (int)amount) + "\n" +
                 "Remaining balance: $" + String.format("%,d", (int)student.getTuitionBalance()),
                 "Payment Complete",

@@ -14,6 +14,9 @@ import java.util.ArrayList;
 
 /**
  * Panel to enroll a student in a course
+ * Registrar can enroll students (admin-side enrollment)
+ * 
+ * @author chethan
  */
 public class EnrollStudentPanel extends javax.swing.JPanel {
 
@@ -143,24 +146,32 @@ public class EnrollStudentPanel extends javax.swing.JPanel {
         }
     }
     
-    private void btnEnrollActionPerformed(java.awt.event.ActionEvent evt) {
+    /**
+     * Enroll student in selected course
+     * UPDATED: Now includes automatic tuition billing
+     */
+   /**
+ * Enroll student in selected course
+ * UPDATED: Added 8-credit limit validation + tuition billing
+ */
+private void btnEnrollActionPerformed(java.awt.event.ActionEvent evt) {
     lblMessage.setText("");
     
-    // 1. VALIDATE
+    // 1. VALIDATE INPUT
     if (cmbSemester.getSelectedItem() == null) {
-        lblMessage.setText("⚠️ Please select a semester!");
+        lblMessage.setText("Please select a semester!");
         return;
     }
     
     if (cmbCourse.getSelectedItem() == null) {
-        lblMessage.setText("⚠️ Please select a course!");
+        lblMessage.setText("Please select a course!");
         return;
     }
     
     String semester = (String) cmbSemester.getSelectedItem();
     String courseDisplay = (String) cmbCourse.getSelectedItem();
     
-    // Extract course number from display (format: "INFO5100 - App Eng (Capacity: 30, Enrolled: 0)")
+    // Extract course number from display
     String courseNumber = courseDisplay.split(" - ")[0];
     
     // 2. GET COURSE OFFERING
@@ -168,20 +179,26 @@ public class EnrollStudentPanel extends javax.swing.JPanel {
     CourseSchedule schedule = dept.getCourseSchedule(semester);
     
     if (schedule == null) {
-        lblMessage.setText("⚠️ Error: Semester not found!");
+        lblMessage.setText("Error: Semester not found!");
         return;
     }
     
     CourseOffer offering = schedule.getCourseOfferByNumber(courseNumber);
     
     if (offering == null) {
-        lblMessage.setText("⚠️ Error: Course offering not found!");
+        lblMessage.setText("Error: Course offering not found!");
         return;
     }
     
     // 3. CHECK IF COURSE IS FULL
     if (offering.getEnrolledCount() >= offering.getCapacity()) {
-        lblMessage.setText("⚠️ Course is full! Cannot enroll.");
+        lblMessage.setText("Course is full! Cannot enroll.");
+        JOptionPane.showMessageDialog(this,
+            "This course is at full capacity!\n\n" +
+            "Capacity: " + offering.getCapacity() + "\n" +
+            "Enrolled: " + offering.getEnrolledCount(),
+            "Course Full",
+            JOptionPane.WARNING_MESSAGE);
         return;
     }
     
@@ -192,53 +209,83 @@ public class EnrollStudentPanel extends javax.swing.JPanel {
     CourseLoad courseLoad = universityStudent.getCourseLoadBySemester(semester);
     
     if (courseLoad == null) {
-        // Create new course load for this semester
         courseLoad = universityStudent.newCourseLoad(semester);
-        System.out.println("✅ Created new course load for " + semester);
+        System.out.println("Created new course load for " + semester);
     }
     
-    // 4.5 CHECK IF STUDENT IS ALREADY ENROLLED IN THIS COURSE
-ArrayList<SeatAssignment> currentEnrollments = courseLoad.getSeatAssignments();
-
-for (SeatAssignment sa : currentEnrollments) {
-    String enrolledCourseNumber = sa.getAssociatedCourse().getCOurseNumber();
-    if (enrolledCourseNumber.equals(courseNumber)) {
-        lblMessage.setText("⚠️ Student is already enrolled in " + courseNumber + "!");
+    // 5. CHECK 8-CREDIT LIMIT (NEW - CRITICAL!)
+    int currentCredits = courseLoad.getTotalCreditHours();
+    int courseCredits = offering.getSubjectCourse().getCredits();
+    
+    if (currentCredits + courseCredits > 8) {
+        lblMessage.setText("Cannot enroll! Exceeds 8-credit limit.");
         JOptionPane.showMessageDialog(this,
-            "Student is already enrolled in this course!\n\n" +
-            "Course: " + courseNumber,
-            "Duplicate Enrollment",
+            "Cannot enroll! Exceeds 8-credit limit.\n\n" +
+            "Student: " + student.getPerson().getFullName() + "\n" +
+            "Current credits: " + currentCredits + "\n" +
+            "Course credits: " + courseCredits + "\n" +
+            "Total would be: " + (currentCredits + courseCredits) + "\n" +
+            "Maximum allowed: 8\n\n" +
+            "Student must drop a course first or choose a lower-credit course.",
+            "Credit Limit Exceeded",
             JOptionPane.WARNING_MESSAGE);
         return;
     }
-}
     
-    // 5. ENROLL STUDENT (Admin override - no credit limit check)
-    info5100.university.example.CourseSchedule.SeatAssignment sa = 
-        offering.assignEmptySeat(courseLoad);
+    // 6. CHECK IF STUDENT IS ALREADY ENROLLED IN THIS COURSE
+    ArrayList<SeatAssignment> currentEnrollments = courseLoad.getSeatAssignments();
+
+    for (SeatAssignment sa : currentEnrollments) {
+        String enrolledCourseNumber = sa.getAssociatedCourse().getCOurseNumber();
+        if (enrolledCourseNumber.equals(courseNumber)) {
+            lblMessage.setText("Student is already enrolled in " + courseNumber + "!");
+            JOptionPane.showMessageDialog(this,
+                "Student is already enrolled in this course!\n\n" +
+                "Course: " + courseNumber,
+                "Duplicate Enrollment",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    }
+    
+    // 7. ENROLL STUDENT
+    SeatAssignment sa = offering.assignEmptySeat(courseLoad);
     
     if (sa == null) {
-        lblMessage.setText("⚠️ Error: Could not enroll student!");
+        lblMessage.setText("Error: Could not enroll student!");
+        JOptionPane.showMessageDialog(this,
+            "Enrollment failed!\n\nThe course may be full or there was a system error.",
+            "Enrollment Error",
+            JOptionPane.ERROR_MESSAGE);
         return;
     }
     
-    // 6. SUCCESS!
-    System.out.println("✅ Enrolled " + student.getPerson().getFullName() + 
-                      " in " + courseNumber);
+    // 8. AUTO-BILL TUITION
+    double courseTuition = offering.getSubjectCourse().getCoursePrice();
+    student.addTuitionCharge(courseTuition);
     
+    System.out.println("Enrolled " + student.getPerson().getFullName() + 
+                      " in " + courseNumber);
+    System.out.println("Credits: " + (currentCredits + courseCredits) + "/8");
+    System.out.println("Billed tuition: $" + courseTuition + 
+                      " | New balance: $" + student.getTuitionBalance());
+    
+    // 9. SUCCESS MESSAGE
     JOptionPane.showMessageDialog(this,
-        "✅ Student enrolled successfully!\n\n" +
+        "Student enrolled successfully!\n\n" +
         "Student: " + student.getPerson().getFullName() + "\n" +
         "Course: " + courseNumber + " - " + offering.getSubjectCourse().getName() + "\n" +
-        "Semester: " + semester,
-        "Success",
+        "Semester: " + semester + "\n" +
+        "Credits: " + courseCredits + " (Total: " + (currentCredits + courseCredits) + "/8)\n\n" +
+        "Tuition Billed: $" + String.format("%,d", (int)courseTuition) + "\n" +
+        "New Balance: $" + String.format("%,d", (int)student.getTuitionBalance()),
+        "Enrollment Complete",
         JOptionPane.INFORMATION_MESSAGE);
     
     // Go back to Student Registration panel
     CardSequencePanel.remove(this);
     ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);
 }
-    
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {
         CardSequencePanel.remove(this);
         ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);

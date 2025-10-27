@@ -2,6 +2,8 @@ package UserInterface.WorkAreas.FacultyRole;
 
 import Business.Business;
 import Business.Profiles.FacultyProfile;
+import Business.Profiles.StudentDirectory;
+import Business.Profiles.StudentProfile;
 
 import info5100.university.example.Department.Department;
 import info5100.university.example.CourseSchedule.CourseSchedule;
@@ -11,7 +13,6 @@ import info5100.university.example.CourseSchedule.SeatAssignment;
 import info5100.university.example.CourseCatalog.Course;
 
 import javax.swing.*;
-import javax.swing.BorderFactory;
 import javax.swing.table.DefaultTableModel;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +23,8 @@ import java.io.IOException;
 /**
  * Performance Reports Panel
  * Faculty can generate course performance reports with grade distribution
+ * 
+ * @author chethan
  */
 public class PerformanceReportsPanel extends javax.swing.JPanel {
 
@@ -29,7 +32,6 @@ public class PerformanceReportsPanel extends javax.swing.JPanel {
     Business business;
     FacultyProfile faculty;
     
-    // UI Components
     private JLabel lblTitle;
     private JLabel lblSelectCourse;
     private JComboBox<String> cmbCourse;
@@ -56,32 +58,27 @@ public class PerformanceReportsPanel extends javax.swing.JPanel {
     }
     
     private void initComponents() {
-        // Title
         lblTitle = new JLabel();
         lblTitle.setFont(new java.awt.Font("Arial", 1, 24));
         lblTitle.setText("Performance Reports");
         
-        // Select Course
         lblSelectCourse = new JLabel();
         lblSelectCourse.setText("Select Course:");
         
         cmbCourse = new JComboBox<>();
         
-        // Semester
         lblSemester = new JLabel();
         lblSemester.setText("Semester:");
         
         cmbSemester = new JComboBox<>();
         cmbSemester.addActionListener(evt -> cmbSemesterActionPerformed(evt));
         
-        // Generate Button
         btnGenerate = new JButton();
         btnGenerate.setBackground(new java.awt.Color(102, 153, 255));
         btnGenerate.setForeground(new java.awt.Color(255, 255, 255));
         btnGenerate.setText("Generate Report");
         btnGenerate.addActionListener(evt -> btnGenerateActionPerformed(evt));
         
-        // Export Button
         btnExport = new JButton();
         btnExport.setBackground(new java.awt.Color(51, 153, 102));
         btnExport.setForeground(new java.awt.Color(255, 255, 255));
@@ -89,7 +86,6 @@ public class PerformanceReportsPanel extends javax.swing.JPanel {
         btnExport.addActionListener(evt -> btnExportActionPerformed(evt));
         btnExport.setEnabled(false);
         
-        // Report Table (Grade Distribution)
         tblReport = new JTable();
         tblReport.setModel(new DefaultTableModel(
             new Object[][] {},
@@ -106,7 +102,6 @@ public class PerformanceReportsPanel extends javax.swing.JPanel {
         scrollPane = new JScrollPane();
         scrollPane.setViewportView(tblReport);
         
-        // Summary Panel
         summaryPanel = new JPanel();
         summaryPanel.setBorder(BorderFactory.createTitledBorder("Course Summary"));
         summaryPanel.setLayout(null);
@@ -129,12 +124,10 @@ public class PerformanceReportsPanel extends javax.swing.JPanel {
         summaryPanel.add(lblTotalTuition);
         lblTotalTuition.setBounds(290, 25, 250, 25);
         
-        // Back Button
         btnBack = new JButton();
         btnBack.setText("<< Back");
         btnBack.addActionListener(evt -> btnBackActionPerformed(evt));
         
-        // Layout
         setLayout(null);
         
         add(lblTitle);
@@ -159,7 +152,7 @@ public class PerformanceReportsPanel extends javax.swing.JPanel {
         btnExport.setBounds(690, 105, 150, 25);
         
         add(scrollPane);
-        scrollPane.setBounds(30, 120, 650, 300);
+        scrollPane.setBounds(30, 145, 650, 275);
         
         add(summaryPanel);
         summaryPanel.setBounds(30, 430, 650, 100);
@@ -171,7 +164,6 @@ public class PerformanceReportsPanel extends javax.swing.JPanel {
     private void loadSemesters() {
         cmbSemester.removeAllItems();
         cmbSemester.addItem("Fall2025");
-        // Add more semesters as needed
     }
     
     private void cmbSemesterActionPerformed(java.awt.event.ActionEvent evt) {
@@ -184,7 +176,6 @@ public class PerformanceReportsPanel extends javax.swing.JPanel {
         String semester = (String) cmbSemester.getSelectedItem();
         if (semester == null) return;
         
-        // Get faculty's courses for selected semester
         Department dept = business.getDepartment();
         CourseSchedule schedule = dept.getCourseSchedule(semester);
         
@@ -192,7 +183,6 @@ public class PerformanceReportsPanel extends javax.swing.JPanel {
         
         ArrayList<CourseOffer> allOfferings = schedule.getCourseOffers();
         
-        // Filter courses taught by this faculty
         for (CourseOffer offer : allOfferings) {
             try {
                 info5100.university.example.Persona.Faculty.FacultyProfile assignedFaculty = 
@@ -233,7 +223,6 @@ public class PerformanceReportsPanel extends javax.swing.JPanel {
         String courseNumber = courseDisplay.split(" - ")[0];
         String semester = (String) cmbSemester.getSelectedItem();
         
-        // Get course offer
         Department dept = business.getDepartment();
         CourseSchedule schedule = dept.getCourseSchedule(semester);
         CourseOffer offer = schedule.getCourseOfferByNumber(courseNumber);
@@ -260,7 +249,11 @@ public class PerformanceReportsPanel extends javax.swing.JPanel {
         int totalStudents = 0;
         double totalGradePoints = 0;
         int gradedStudents = 0;
-        int totalTuition = 0;
+        
+        // Get student directory to calculate tuition from paid students
+        StudentDirectory sd = business.getStudentDirectory();
+        ArrayList<StudentProfile> allStudents = sd.getStudentList();
+        double totalTuitionCollected = 0;
         
         for (Seat seat : seats) {
             if (seat.isOccupied()) {
@@ -277,8 +270,32 @@ public class PerformanceReportsPanel extends javax.swing.JPanel {
                         gradeDistribution.put("Not Graded", gradeDistribution.get("Not Graded") + 1);
                     }
                     
-                    // Calculate tuition
-                    totalTuition += offer.getSubjectCourse().getCoursePrice();
+                    // Calculate tuition collected for THIS course from students who paid
+                    // Find the student who has this seat assignment
+                    for (StudentProfile sp : allStudents) {
+                        info5100.university.example.Persona.Transcript transcript = 
+                            sp.getUniversityProfile().getTranscript();
+                        ArrayList<SeatAssignment> studentEnrollments = transcript.getCourseList();
+                        
+                        if (studentEnrollments != null) {
+                            for (SeatAssignment studentSa : studentEnrollments) {
+                                if (studentSa == sa) {
+                                    // Found the student - check if they paid
+                                    double coursePrice = offer.getSubjectCourse().getCoursePrice();
+                                    double totalOwed = sp.calculateTotalTuitionOwed();
+                                    double balance = sp.getTuitionBalance();
+                                    double amountPaid = totalOwed - balance;
+                                    
+                                    // Proportional payment for this course
+                                    if (totalOwed > 0) {
+                                        double proportionPaid = amountPaid / totalOwed;
+                                        totalTuitionCollected += coursePrice * proportionPaid;
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -302,9 +319,9 @@ public class PerformanceReportsPanel extends javax.swing.JPanel {
         
         lblAverageGrade.setText(String.format("Average Grade: %.2f", avgGrade));
         lblEnrollmentCount.setText("Enrollment Count: " + totalStudents);
-        lblTotalTuition.setText("Total Tuition: $" + String.format("%,d", totalTuition));
+        lblTotalTuition.setText("Tuition Collected: $" + String.format("%,d", (int)totalTuitionCollected));
         
-        System.out.println("✅ Generated performance report for " + courseNumber);
+        System.out.println("Generated performance report for " + courseNumber);
     }
     
     private void btnExportActionPerformed(java.awt.event.ActionEvent evt) {
@@ -324,24 +341,20 @@ public class PerformanceReportsPanel extends javax.swing.JPanel {
         try {
             FileWriter writer = new FileWriter(filename);
             
-            // Write header
             writer.append("Course Performance Report\n");
             writer.append("Course: " + courseDisplay + "\n");
             writer.append("Semester: " + semester + "\n");
             writer.append("Generated by: " + faculty.getPerson().getFullName() + "\n");
             writer.append("\n");
             
-            // Write summary
             writer.append("Summary\n");
             writer.append(lblAverageGrade.getText() + "\n");
             writer.append(lblEnrollmentCount.getText() + "\n");
             writer.append(lblTotalTuition.getText() + "\n");
             writer.append("\n");
             
-            // Write table headers
             writer.append("Letter Grade,Number of Students,Percentage\n");
             
-            // Write table data
             for (int i = 0; i < model.getRowCount(); i++) {
                 for (int j = 0; j < model.getColumnCount(); j++) {
                     writer.append(String.valueOf(model.getValueAt(i, j)));
@@ -360,7 +373,7 @@ public class PerformanceReportsPanel extends javax.swing.JPanel {
                 "Export Successful",
                 JOptionPane.INFORMATION_MESSAGE);
             
-            System.out.println("✅ Exported report to " + filename);
+            System.out.println("Exported report to " + filename);
             
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this,

@@ -12,7 +12,10 @@ import javax.swing.table.DefaultTableModel;
 import java.util.ArrayList;
 
 /**
- * Student Transcript Panel - Shows complete academic history
+ * Student Transcript Panel
+ * Faculty can view complete academic history of a student
+ * 
+ * @author chethan
  */
 public class StudentTranscriptPanel extends javax.swing.JPanel {
 
@@ -41,31 +44,25 @@ public class StudentTranscriptPanel extends javax.swing.JPanel {
     }
     
     private void initComponents() {
-        // Title
         lblTitle = new JLabel();
         lblTitle.setFont(new java.awt.Font("Arial", 1, 24));
         lblTitle.setText("Student Transcript");
         
-        // Student Info
         lblStudentInfo = new JLabel();
         lblStudentInfo.setFont(new java.awt.Font("Dialog", 1, 16));
         lblStudentInfo.setText("Student: " + student.getPerson().getFullName() + 
                               " (ID: " + student.getPerson().getPersonId() + ")");
         
-        // Overall GPA
         lblOverallGPA = new JLabel();
         lblOverallGPA.setFont(new java.awt.Font("Dialog", 1, 16));
         lblOverallGPA.setForeground(new java.awt.Color(0, 102, 204));
         
-        // Total Credits
         lblTotalCredits = new JLabel();
         lblTotalCredits.setFont(new java.awt.Font("Dialog", 0, 14));
         
-        // Academic Standing
         lblAcademicStanding = new JLabel();
         lblAcademicStanding.setFont(new java.awt.Font("Dialog", 1, 14));
         
-        // Transcript Table
         tblTranscript = new JTable();
         tblTranscript.setModel(new DefaultTableModel(
             new Object[][] {},
@@ -82,12 +79,10 @@ public class StudentTranscriptPanel extends javax.swing.JPanel {
         scrollPane = new JScrollPane();
         scrollPane.setViewportView(tblTranscript);
         
-        // Back Button
         btnBack = new JButton();
         btnBack.setText("<< Back");
         btnBack.addActionListener(evt -> btnBackActionPerformed(evt));
         
-        // Layout
         setLayout(null);
         
         add(lblTitle);
@@ -119,7 +114,6 @@ public class StudentTranscriptPanel extends javax.swing.JPanel {
         info5100.university.example.Persona.StudentProfile univStudent = student.getUniversityProfile();
         Transcript transcript = univStudent.getTranscript();
         
-        // Get all courses
         ArrayList<SeatAssignment> allCourses = transcript.getCourseList();
         
         double totalQualityPoints = 0;
@@ -151,14 +145,12 @@ public class StudentTranscriptPanel extends javax.swing.JPanel {
             }
         }
         
-        // Calculate overall GPA
         float overallGPA = transcript.calculateOverallGPA();
         int totalCreditHours = transcript.getTotalCreditHours();
         
         lblOverallGPA.setText(String.format("Overall GPA: %.2f", overallGPA));
         lblTotalCredits.setText("Total Credits Completed: " + totalCreditHours);
         
-        // Academic Standing
         String standing = transcript.getOverallAcademicStanding();
         lblAcademicStanding.setText("Academic Standing: " + standing);
         
@@ -168,8 +160,17 @@ public class StudentTranscriptPanel extends javax.swing.JPanel {
             lblAcademicStanding.setForeground(new java.awt.Color(204, 0, 0));
         }
         
-        System.out.println("✅ Loaded transcript for " + student.getPerson().getFullName() + 
+        System.out.println("Loaded transcript for " + student.getPerson().getFullName() + 
                           " - " + allCourses.size() + " courses");
+    }
+    
+    private void btnViewFullTranscriptActionPerformed(java.awt.event.ActionEvent evt) {
+        // Already viewing full transcript, so just show message
+        JOptionPane.showMessageDialog(this, 
+            "You are viewing the complete transcript.\n\n" +
+            "All courses across all semesters are displayed.",
+            "Full Transcript",
+            JOptionPane.INFORMATION_MESSAGE);
     }
     
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {

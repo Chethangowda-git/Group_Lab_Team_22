@@ -15,6 +15,8 @@ import java.util.ArrayList;
 /**
  * Transcript Panel
  * Student can view academic history with GPA and academic standing
+ * 
+ * @author chethan
  */
 public class TranscriptPanel extends javax.swing.JPanel {
 
@@ -34,50 +36,9 @@ public class TranscriptPanel extends javax.swing.JPanel {
     private JButton btnBack;
     
     public TranscriptPanel(Business b, StudentProfile sp, JPanel clp) {
-         business = b;
-    student = sp;
-    CardSequencePanel = clp;
-    
-    // CHECK IF TUITION IS PAID BEFORE SHOWING TRANSCRIPT
-    if (!student.isTuitionPaid()) {
-        double balance = student.getTuitionBalance();
-        
-        int response = JOptionPane.showConfirmDialog(null,
-            "⚠️ TUITION PAYMENT REQUIRED\n\n" +
-            "You cannot view your transcript until tuition is paid.\n\n" +
-            "Current Balance: $" + String.format("%,d", (int)balance) + "\n\n" +
-            "Would you like to pay now?",
-            "Payment Required",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE);
-        
-        if (response == JOptionPane.YES_OPTION) {
-            // Open Pay Tuition Panel instead of transcript
-            PayTuitionPanel payPanel = new PayTuitionPanel(business, student, clp);
-            clp.add("PayTuition", payPanel);
-            ((java.awt.CardLayout) clp.getLayout()).next(clp);
-        }
-        
-        // Don't initialize transcript panel - just show empty panel
-        JLabel blockedMsg = new JLabel();
-        blockedMsg.setText("Transcript blocked until tuition is paid");
-        blockedMsg.setFont(new java.awt.Font("Arial", 1, 18));
-        blockedMsg.setForeground(java.awt.Color.RED);
-        
-        setLayout(null);
-        add(blockedMsg);
-        blockedMsg.setBounds(30, 200, 500, 30);
-        
-        JButton backBtn = new JButton("<< Back");
-        backBtn.addActionListener(evt -> {
-            clp.remove(this);
-            ((java.awt.CardLayout) clp.getLayout()).next(clp);
-        });
-        add(backBtn);
-        backBtn.setBounds(30, 250, 100, 35);
-        
-        return; // Don't continue with normal initialization
-    }
+        business = b;
+        student = sp;
+        CardSequencePanel = clp;
         
         initComponents();
         loadSemesters();
@@ -185,6 +146,13 @@ public class TranscriptPanel extends javax.swing.JPanel {
         String standing = transcript.getOverallAcademicStanding();
         lblAcademicStanding.setText("Academic Standing: " + standing);
         
+        // Color code academic standing
+        if ("Good Standing".equals(standing)) {
+            lblAcademicStanding.setForeground(new java.awt.Color(0, 128, 0));
+        } else {
+            lblAcademicStanding.setForeground(java.awt.Color.RED);
+        }
+        
         // Get all enrollments
         ArrayList<SeatAssignment> allEnrollments = transcript.getCourseList();
         
@@ -238,7 +206,7 @@ public class TranscriptPanel extends javax.swing.JPanel {
             model.addRow(row);
         }
         
-        System.out.println("✅ Loaded transcript with Overall GPA: " + overallGPA);
+        System.out.println("Loaded transcript with Overall GPA: " + overallGPA);
     }
     
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {
