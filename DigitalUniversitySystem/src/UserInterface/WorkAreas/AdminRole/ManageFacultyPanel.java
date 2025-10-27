@@ -241,14 +241,48 @@ private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {
     ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);
     }
     
-    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {
-        if (selectedFaculty == null) {
-            JOptionPane.showMessageDialog(this, "Please select a faculty member first!");
-            return;
-        }
-        JOptionPane.showMessageDialog(this, "Delete faculty - Coming in next step!");
+  private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {
+    if (selectedFaculty == null) {
+        JOptionPane.showMessageDialog(this, "Please select a faculty member first!");
+        return;
+    }
+
+    // Check if faculty has assigned courses
+    info5100.university.example.Persona.Faculty.FacultyProfile univFaculty =
+        selectedFaculty.getUniversityProfile();
+
+    if (univFaculty.getFacultyAssignments() != null &&
+        univFaculty.getFacultyAssignments().size() > 0) {
+        JOptionPane.showMessageDialog(this,
+            "⚠️ Cannot delete faculty with assigned courses!\n\n" +
+            "Faculty is teaching " + univFaculty.getFacultyAssignments().size() + " courses.\n" +
+            "Please unassign courses first.",
+            "Delete Not Allowed",
+            JOptionPane.WARNING_MESSAGE);
+        return;
     }
     
+    int confirm = JOptionPane.showConfirmDialog(this,
+        "⚠️ Are you sure you want to DELETE:\n\n" +
+        selectedFaculty.getPerson().getFullName() + "\n" +
+        "ID: " + selectedFaculty.getPerson().getPersonId() + "\n\n" +
+        "This action cannot be undone!",
+        "Confirm Delete",
+        JOptionPane.YES_NO_OPTION,
+        JOptionPane.WARNING_MESSAGE);
+
+    if (confirm != JOptionPane.YES_OPTION) return;
+
+    // Remove from directory
+    FacultyDirectory fd = business.getFacultyDirectory();
+    fd.getFacultyList().remove(selectedFaculty);
+
+    JOptionPane.showMessageDialog(this, "✅ Faculty deleted successfully!");
+
+    selectedFaculty = null;
+    loadAllFaculty();
+}
+
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {
         CardSequencePanel.remove(this);
         ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);
