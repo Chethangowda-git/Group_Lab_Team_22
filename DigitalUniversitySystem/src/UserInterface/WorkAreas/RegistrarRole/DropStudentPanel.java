@@ -13,6 +13,9 @@ import java.util.ArrayList;
 
 /**
  * Panel to drop a student from a course
+ * Registrar can drop students and auto-refund tuition
+ * 
+ * @author chethan
  */
 public class DropStudentPanel extends javax.swing.JPanel {
 
@@ -60,9 +63,9 @@ public class DropStudentPanel extends javax.swing.JPanel {
         tblEnrollments = new JTable();
         tblEnrollments.setModel(new DefaultTableModel(
             new Object[][] {},
-            new String[] {"Course Number", "Course Name", "Semester"}
+            new String[] {"Course Number", "Course Name", "Semester", "Tuition"}
         ) {
-            boolean[] canEdit = new boolean[] {false, false, false};
+            boolean[] canEdit = new boolean[] {false, false, false, false};
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit[columnIndex];
             }
@@ -105,13 +108,13 @@ public class DropStudentPanel extends javax.swing.JPanel {
         lblInstructions.setBounds(30, 110, 300, 25);
         
         add(scrollPane);
-        scrollPane.setBounds(30, 140, 600, 200);
+        scrollPane.setBounds(30, 140, 650, 200);
         
         add(lblMessage);
         lblMessage.setBounds(30, 350, 500, 25);
         
         add(btnDrop);
-        btnDrop.setBounds(350, 390, 180, 35);
+        btnDrop.setBounds(400, 390, 180, 35);
         
         add(btnCancel);
         btnCancel.setBounds(30, 390, 100, 35);
@@ -128,16 +131,17 @@ public class DropStudentPanel extends javax.swing.JPanel {
         ArrayList<SeatAssignment> enrollments = transcript.getCourseList();
         
         if (enrollments == null || enrollments.isEmpty()) {
-            Object[] row = new Object[3];
+            Object[] row = new Object[4];
             row[0] = "No enrollments";
             row[1] = "Student is not enrolled in any courses";
             row[2] = "";
+            row[3] = "";
             model.addRow(row);
             return;
         }
         
         for (SeatAssignment sa : enrollments) {
-            Object[] row = new Object[3];
+            Object[] row = new Object[4];
             
             info5100.university.example.CourseCatalog.Course course = sa.getAssociatedCourse();
             row[0] = course.getCOurseNumber();
@@ -146,8 +150,13 @@ public class DropStudentPanel extends javax.swing.JPanel {
             CourseLoad courseLoad = sa.getCourseLoad();
             row[2] = courseLoad != null ? courseLoad.getSemester() : "Unknown";
             
+            // Show tuition for this course
+            row[3] = "$" + String.format("%,d", course.getCoursePrice());
+            
             model.addRow(row);
         }
+        
+        System.out.println("Loaded " + enrollments.size() + " enrollments");
     }
     
     private void tblEnrollmentsSelectionChanged() {
@@ -170,6 +179,10 @@ public class DropStudentPanel extends javax.swing.JPanel {
         }
     }
     
+    /**
+     * Drop student from selected course
+     * UPDATED: Now includes automatic tuition refund
+     */
     private void btnDropActionPerformed(java.awt.event.ActionEvent evt) {
         if (selectedEnrollment == null) {
             JOptionPane.showMessageDialog(this, "Please select a course to drop!");
@@ -179,14 +192,17 @@ public class DropStudentPanel extends javax.swing.JPanel {
         // Get course info for confirmation
         String courseNumber = selectedEnrollment.getAssociatedCourse().getCOurseNumber();
         String courseName = selectedEnrollment.getAssociatedCourse().getName();
+        double coursePrice = selectedEnrollment.getAssociatedCourse().getCoursePrice();
         
         // Confirm with user
         int confirm = JOptionPane.showConfirmDialog(this,
             "Are you sure you want to drop:\n\n" +
-            student.getPerson().getFullName() + "\n" +
-            "from " + courseNumber + " - " + courseName + "?",
+            "Student: " + student.getPerson().getFullName() + "\n" +
+            "From: " + courseNumber + " - " + courseName + "\n\n" +
+            "Tuition will be refunded: $" + String.format("%,d", (int)coursePrice),
             "Confirm Drop",
-            JOptionPane.YES_NO_OPTION);
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
         
         if (confirm != JOptionPane.YES_OPTION) {
             return;
@@ -204,16 +220,23 @@ public class DropStudentPanel extends javax.swing.JPanel {
         courseLoad.getSeatAssignments().remove(selectedEnrollment);
         
         // Mark seat as unoccupied
-       selectedEnrollment.getSeat().vacate();
+        selectedEnrollment.getSeat().vacate();
         
-        System.out.println("✅ Dropped " + student.getPerson().getFullName() + 
+        // REFUND TUITION (NEW - CRITICAL FOR DATA COMPATIBILITY)
+        student.refundTuition(coursePrice);
+        
+        System.out.println("Dropped " + student.getPerson().getFullName() + 
                           " from " + courseNumber);
+        System.out.println("Refunded tuition: $" + coursePrice + 
+                          " | New balance: $" + student.getTuitionBalance());
         
         JOptionPane.showMessageDialog(this,
-            "✅ Student dropped successfully!\n\n" +
+            "Student dropped successfully!\n\n" +
             "Student: " + student.getPerson().getFullName() + "\n" +
-            "Course: " + courseNumber + " - " + courseName,
-            "Success",
+            "Course: " + courseNumber + " - " + courseName + "\n\n" +
+            "Tuition Refunded: $" + String.format("%,d", (int)coursePrice) + "\n" +
+            "New Balance: $" + String.format("%,d", (int)student.getTuitionBalance()),
+            "Drop Complete",
             JOptionPane.INFORMATION_MESSAGE);
         
         // Go back

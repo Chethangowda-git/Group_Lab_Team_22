@@ -10,7 +10,6 @@ import info5100.university.example.CourseCatalog.Course;
 import info5100.university.example.CourseCatalog.CourseCatalog;
 import info5100.university.example.CourseSchedule.CourseSchedule;
 import info5100.university.example.CourseSchedule.CourseOffer;
-import info5100.university.example.CourseSchedule.SeatAssignment;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -18,6 +17,8 @@ import java.util.ArrayList;
 /**
  * Panel to create a new course offering
  * Registrar can select course, faculty, set capacity, room, and schedule time
+ * 
+ * @author chethan
  */
 public class CreateCourseOfferingPanel extends javax.swing.JPanel {
 
@@ -26,7 +27,6 @@ public class CreateCourseOfferingPanel extends javax.swing.JPanel {
     RegistrarProfile registrar;
     String selectedSemester;
     
-    // UI Components
     private JLabel lblTitle;
     private JLabel lblSemester;
     private JLabel lblSemesterValue;
@@ -56,12 +56,10 @@ public class CreateCourseOfferingPanel extends javax.swing.JPanel {
     }
     
     private void initComponents() {
-        // Title
         lblTitle = new JLabel();
         lblTitle.setFont(new java.awt.Font("Arial", 1, 24));
         lblTitle.setText("Create New Course Offering");
         
-        // Semester Display
         lblSemester = new JLabel();
         lblSemester.setFont(new java.awt.Font("Dialog", 1, 14));
         lblSemester.setText("Semester:");
@@ -70,45 +68,38 @@ public class CreateCourseOfferingPanel extends javax.swing.JPanel {
         lblSemesterValue.setFont(new java.awt.Font("Dialog", 0, 14));
         lblSemesterValue.setText(selectedSemester);
         
-        // Course Selection
         lblCourse = new JLabel();
         lblCourse.setText("Select Course: *");
         
         cmbCourse = new JComboBox<>();
         
-        // Faculty Selection
         lblFaculty = new JLabel();
         lblFaculty.setText("Assign Faculty (Optional):");
         
         cmbFaculty = new JComboBox<>();
         cmbFaculty.addItem("-- Not Assigned --");
         
-        // Capacity
         lblCapacity = new JLabel();
         lblCapacity.setText("Capacity (Seats): *");
         
         txtCapacity = new JTextField();
-        txtCapacity.setText("30"); // Default capacity
+        txtCapacity.setText("30");
         
-        // Room
         lblRoom = new JLabel();
         lblRoom.setText("Room:");
         
         txtRoom = new JTextField();
-        txtRoom.setText("TBD"); // Default room
+        txtRoom.setText("TBD");
         
-        // Schedule Time
         lblScheduleTime = new JLabel();
         lblScheduleTime.setText("Schedule Time:");
         
         txtScheduleTime = new JTextField();
-        txtScheduleTime.setText("TBD"); // Default time
+        txtScheduleTime.setText("TBD");
         
-        // Message Label
         lblMessage = new JLabel();
         lblMessage.setForeground(java.awt.Color.RED);
         
-        // Buttons
         btnCreate = new JButton();
         btnCreate.setBackground(new java.awt.Color(102, 153, 255));
         btnCreate.setForeground(new java.awt.Color(255, 255, 255));
@@ -127,7 +118,6 @@ public class CreateCourseOfferingPanel extends javax.swing.JPanel {
             }
         });
         
-        // Layout
         setLayout(null);
         
         add(lblTitle);
@@ -180,7 +170,6 @@ public class CreateCourseOfferingPanel extends javax.swing.JPanel {
     }
     
     private void loadCourses() {
-        // Get all courses from the catalog
         Department dept = business.getDepartment();
         CourseCatalog catalog = dept.getCourseCatalog();
         ArrayList<Course> courses = catalog.getCourseList();
@@ -192,11 +181,10 @@ public class CreateCourseOfferingPanel extends javax.swing.JPanel {
             cmbCourse.addItem(display);
         }
         
-        System.out.println("✅ Loaded " + courses.size() + " courses");
+        System.out.println("Loaded " + courses.size() + " courses");
     }
     
     private void loadFaculty() {
-        // Get all faculty from Business
         FacultyDirectory fd = business.getFacultyDirectory();
         ArrayList<FacultyProfile> facultyList = fd.getFacultyList();
         
@@ -205,22 +193,21 @@ public class CreateCourseOfferingPanel extends javax.swing.JPanel {
             cmbFaculty.addItem(display);
         }
         
-        System.out.println("✅ Loaded " + facultyList.size() + " faculty members");
+        System.out.println("Loaded " + facultyList.size() + " faculty");
     }
     
     private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {
-        // Clear previous messages
         lblMessage.setText("");
         
-        // 1. VALIDATE INPUT
+        // VALIDATE
         if (cmbCourse.getSelectedItem() == null) {
-            lblMessage.setText("⚠️ Please select a course!");
+            lblMessage.setText("Please select a course!");
             return;
         }
         
         String capacityText = txtCapacity.getText().trim();
         if (capacityText.isEmpty()) {
-            lblMessage.setText("⚠️ Please enter capacity!");
+            lblMessage.setText("Please enter capacity!");
             return;
         }
         
@@ -228,69 +215,59 @@ public class CreateCourseOfferingPanel extends javax.swing.JPanel {
         try {
             capacity = Integer.parseInt(capacityText);
             if (capacity <= 0) {
-                lblMessage.setText("⚠️ Capacity must be greater than 0!");
+                lblMessage.setText("Capacity must be greater than 0!");
                 return;
             }
             if (capacity > 100) {
-                lblMessage.setText("⚠️ Capacity cannot exceed 100!");
+                lblMessage.setText("Capacity cannot exceed 100!");
                 return;
             }
         } catch (NumberFormatException e) {
-            lblMessage.setText("⚠️ Capacity must be a valid number!");
+            lblMessage.setText("Capacity must be a valid number!");
             return;
         }
         
-        // Get room and time (optional fields)
         String room = txtRoom.getText().trim();
         String scheduleTime = txtScheduleTime.getText().trim();
         
-        if (room.isEmpty()) {
-            room = "TBD";
-        }
+        if (room.isEmpty()) room = "TBD";
+        if (scheduleTime.isEmpty()) scheduleTime = "TBD";
         
-        if (scheduleTime.isEmpty()) {
-            scheduleTime = "TBD";
-        }
-        
-        // 2. EXTRACT SELECTED VALUES
+        // EXTRACT VALUES
         String selectedCourseDisplay = (String) cmbCourse.getSelectedItem();
         String courseNumber = selectedCourseDisplay.split(" - ")[0];
         
         String selectedFacultyDisplay = (String) cmbFaculty.getSelectedItem();
         boolean hasFaculty = !selectedFacultyDisplay.equals("-- Not Assigned --");
         
-        // 3. CREATE THE COURSE OFFERING
+        // CREATE OFFERING
         Department dept = business.getDepartment();
         CourseSchedule schedule = dept.getCourseSchedule(selectedSemester);
         
         if (schedule == null) {
-            lblMessage.setText("⚠️ Error: Semester schedule not found!");
+            lblMessage.setText("Error: Semester schedule not found!");
             return;
         }
         
-        // Check if course offering already exists
+        // Check if already exists
         CourseOffer existingOffer = schedule.getCourseOfferByNumber(courseNumber);
         if (existingOffer != null) {
-            lblMessage.setText("⚠️ Course offering already exists for " + courseNumber + " in " + selectedSemester + "!");
+            lblMessage.setText("Course offering already exists for " + courseNumber + "!");
             return;
         }
         
-        // Create the course offering
         CourseOffer newOffering = schedule.newCourseOffer(courseNumber);
         
         if (newOffering == null) {
-            lblMessage.setText("⚠️ Error: Could not create course offering!");
+            lblMessage.setText("Error: Could not create offering!");
             return;
         }
         
-        // Generate seats
         newOffering.generatSeats(capacity);
-        
-        // Set room and schedule time (NEW!)
         newOffering.setRoom(room);
         newOffering.setScheduleTime(scheduleTime);
         
-        // 4. ASSIGN FACULTY (if selected)
+        // ASSIGN FACULTY
         if (hasFaculty) {
             FacultyDirectory fd = business.getFacultyDirectory();
             ArrayList<FacultyProfile> facultyList = fd.getFacultyList();
@@ -298,20 +275,16 @@ public class CreateCourseOfferingPanel extends javax.swing.JPanel {
             for (FacultyProfile fp : facultyList) {
                 if (fp.getPerson().getFullName().equals(selectedFacultyDisplay)) {
                     newOffering.AssignAsTeacher(fp.getUniversityProfile());
-                    System.out.println("✅ Assigned faculty: " + selectedFacultyDisplay);
+                    System.out.println("Assigned faculty: " + selectedFacultyDisplay);
                     break;
                 }
             }
         }
         
-        // 5. SUCCESS!
-        System.out.println("✅ Created course offering: " + courseNumber + 
-                          " | Capacity: " + capacity + 
-                          " | Room: " + room + 
-                          " | Time: " + scheduleTime);
+        System.out.println("Created offering: " + courseNumber + " | Capacity: " + capacity);
         
         JOptionPane.showMessageDialog(this, 
-            "✅ Course offering created successfully!\n\n" +
+            "Course offering created successfully!\n\n" +
             "Course: " + courseNumber + "\n" +
             "Capacity: " + capacity + "\n" +
             "Room: " + room + "\n" +
@@ -320,13 +293,11 @@ public class CreateCourseOfferingPanel extends javax.swing.JPanel {
             "Success",
             JOptionPane.INFORMATION_MESSAGE);
         
-        // Go back to Course Offering Management panel
         CardSequencePanel.remove(this);
         ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);
     }
     
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {
-        // Go back to Course Offering Management panel
         CardSequencePanel.remove(this);
         ((java.awt.CardLayout) CardSequencePanel.getLayout()).next(CardSequencePanel);
     }
