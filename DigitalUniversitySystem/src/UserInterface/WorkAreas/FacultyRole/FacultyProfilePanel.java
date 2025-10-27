@@ -6,6 +6,12 @@ import Business.Person.Person;
 
 import javax.swing.*;
 
+/**
+ * Faculty Profile Panel
+ * Faculty can view and edit their profile
+ * 
+ * @author chethan
+ */
 public class FacultyProfilePanel extends javax.swing.JPanel {
 
     JPanel CardSequencePanel;
@@ -138,12 +144,11 @@ public class FacultyProfilePanel extends javax.swing.JPanel {
         txtPhone.setText(person.getPhone() != null ? person.getPhone() : "");
     }
     
-    // ✅ FIXED VERSION - Syncs both Business and University Model
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {
         lblMessage.setText("");
         
         if (txtEmail.getText().trim().isEmpty() || !txtEmail.getText().contains("@")) {
-            lblMessage.setText("⚠️ Please enter a valid email!");
+            lblMessage.setText("Please enter a valid email!");
             lblMessage.setForeground(java.awt.Color.RED);
             return;
         }
@@ -155,7 +160,7 @@ public class FacultyProfilePanel extends javax.swing.JPanel {
         person.setEmail(txtEmail.getText().trim());
         person.setPhone(txtPhone.getText().trim());
         
-        // ALSO update University Model Person
+        // ALSO update University Model Person for consistency
         info5100.university.example.Persona.Person univPerson = 
             faculty.getUniversityProfile().getPerson();
         univPerson.setFirstName(txtFirstName.getText().trim());
@@ -163,7 +168,7 @@ public class FacultyProfilePanel extends javax.swing.JPanel {
         univPerson.setEmail(txtEmail.getText().trim());
         univPerson.setPhone(txtPhone.getText().trim());
         
-        lblMessage.setText("✅ Profile updated successfully!");
+        lblMessage.setText("Profile updated successfully!");
         lblMessage.setForeground(new java.awt.Color(0, 128, 0));
         
         JOptionPane.showMessageDialog(this, "Profile updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
