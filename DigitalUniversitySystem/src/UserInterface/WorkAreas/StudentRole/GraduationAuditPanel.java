@@ -6,8 +6,6 @@ import Business.Profiles.StudentProfile;
 import info5100.university.example.Persona.Transcript;
 import info5100.university.example.CourseSchedule.SeatAssignment;
 import info5100.university.example.CourseCatalog.Course;
-import info5100.university.example.Department.Department;
-import info5100.university.example.Degree.Degree;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -15,6 +13,8 @@ import java.util.ArrayList;
 /**
  * Graduation Audit Panel
  * Track 32 credits, INFO 5100 requirement, graduation eligibility
+ * 
+ * @author chethan
  */
 public class GraduationAuditPanel extends javax.swing.JPanel {
 
@@ -108,10 +108,6 @@ public class GraduationAuditPanel extends javax.swing.JPanel {
         btnBack.setBounds(30, 490, 100, 35);
     }
     
-    private void loadSemesters() {
-        // Not needed for audit, but can be added if you want semester-by-semester view
-    }
-    
     private void performAudit() {
         info5100.university.example.Persona.StudentProfile univStudent = student.getUniversityProfile();
         Transcript transcript = univStudent.getTranscript();
@@ -132,10 +128,10 @@ public class GraduationAuditPanel extends javax.swing.JPanel {
         }
         
         if (hasInfo5100) {
-            lblCoreStatus.setText("✅ Core Requirement (INFO 5100): Completed");
+            lblCoreStatus.setText("COMPLETED: Core Requirement (INFO 5100)");
             lblCoreStatus.setForeground(new java.awt.Color(0, 128, 0));
         } else {
-            lblCoreStatus.setText("❌ Core Requirement (INFO 5100): Not Completed");
+            lblCoreStatus.setText("NOT COMPLETED: Core Requirement (INFO 5100)");
             lblCoreStatus.setForeground(java.awt.Color.RED);
         }
         
@@ -147,25 +143,25 @@ public class GraduationAuditPanel extends javax.swing.JPanel {
         boolean eligible = (totalCredits >= 32) && hasInfo5100;
         
         if (eligible) {
-            lblGraduationStatus.setText("✅ ELIGIBLE TO GRADUATE!");
+            lblGraduationStatus.setText("ELIGIBLE TO GRADUATE!");
             lblGraduationStatus.setForeground(new java.awt.Color(0, 128, 0));
         } else {
             int creditsNeeded = 32 - totalCredits;
-            lblGraduationStatus.setText("❌ NOT ELIGIBLE - " + creditsNeeded + " more credits needed");
+            lblGraduationStatus.setText("NOT ELIGIBLE - " + creditsNeeded + " more credits needed");
             lblGraduationStatus.setForeground(java.awt.Color.RED);
         }
         
         // Build detailed report
         StringBuilder details = new StringBuilder();
         details.append("GRADUATION REQUIREMENTS FOR MSIS PROGRAM\n");
-        details.append("=" .repeat(60)).append("\n\n");
+        details.append("=".repeat(60)).append("\n\n");
         
         details.append("Total Credits Required: 32\n");
         details.append("Your Total Credits: ").append(totalCredits).append("\n");
         details.append("Credits Remaining: ").append(Math.max(0, 32 - totalCredits)).append("\n\n");
         
         details.append("Core Course Requirement:\n");
-        details.append("- INFO 5100 (4 credits): ").append(hasInfo5100 ? "✅ COMPLETED" : "❌ NOT COMPLETED").append("\n\n");
+        details.append("- INFO 5100 (4 credits): ").append(hasInfo5100 ? "COMPLETED" : "NOT COMPLETED").append("\n\n");
         
         details.append("Elective Requirements:\n");
         details.append("- Elective Credits: ").append(electiveCredits).append(" / 28\n");
@@ -173,10 +169,10 @@ public class GraduationAuditPanel extends javax.swing.JPanel {
         
         details.append("Overall Status:\n");
         if (eligible) {
-            details.append("✅ You have met all graduation requirements!\n");
+            details.append("You have met all graduation requirements!\n");
             details.append("You may apply for graduation.");
         } else {
-            details.append("❌ Requirements not yet met.\n");
+            details.append("Requirements not yet met.\n");
             if (!hasInfo5100) {
                 details.append("- Please complete INFO 5100 (core requirement)\n");
             }
@@ -187,7 +183,7 @@ public class GraduationAuditPanel extends javax.swing.JPanel {
         
         txtDetails.setText(details.toString());
         
-        System.out.println("✅ Graduation audit: " + (eligible ? "ELIGIBLE" : "NOT ELIGIBLE"));
+        System.out.println("Graduation audit: " + (eligible ? "ELIGIBLE" : "NOT ELIGIBLE"));
     }
     
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {

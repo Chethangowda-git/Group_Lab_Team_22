@@ -11,16 +11,22 @@ import info5100.university.example.CourseCatalog.Course;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Course Work Panel
- * Student can view courses and track assignment progress
+ * Student can view courses, track academic progress, and submit assignments
+ * 
+ * @author chethan
  */
 public class CourseWorkPanel extends javax.swing.JPanel {
 
     JPanel CardSequencePanel;
     Business business;
     StudentProfile student;
+    
+    // Track assignment submissions (mock - just tracking submission status)
+    private HashMap<String, Boolean> assignmentSubmissions;
     
     private JLabel lblTitle;
     private JLabel lblSemester;
@@ -31,6 +37,7 @@ public class CourseWorkPanel extends javax.swing.JPanel {
     private JLabel lblAssignmentInfo;
     private JTextArea txtAssignmentInfo;
     private JScrollPane scrollInfo;
+    private JButton btnSubmitAssignment;
     private JButton btnRefresh;
     private JButton btnBack;
     
@@ -39,6 +46,9 @@ public class CourseWorkPanel extends javax.swing.JPanel {
         student = sp;
         CardSequencePanel = clp;
         
+        // Initialize assignment tracking
+        assignmentSubmissions = new HashMap<>();
+        
         initComponents();
         loadMyCourses();
     }
@@ -46,7 +56,7 @@ public class CourseWorkPanel extends javax.swing.JPanel {
     private void initComponents() {
         lblTitle = new JLabel();
         lblTitle.setFont(new java.awt.Font("Arial", 1, 24));
-        lblTitle.setText("My Course Work");
+        lblTitle.setText("My Course Work & Assignments");
         
         lblSemester = new JLabel();
         lblSemester.setText("Semester:");
@@ -63,7 +73,7 @@ public class CourseWorkPanel extends javax.swing.JPanel {
         tblMyCourses.setModel(new DefaultTableModel(
             new Object[][] {},
             new String[] {
-                "Course Number", "Course Name", "Credits", "Current Grade", "Status"
+                "Course Number", "Course Name", "Credits", "Current Grade", "Assignment Status"
             }
         ) {
             boolean[] canEdit = new boolean[] {false, false, false, false, false};
@@ -85,6 +95,12 @@ public class CourseWorkPanel extends javax.swing.JPanel {
         txtAssignmentInfo.setWrapStyleWord(true);
         scrollInfo = new JScrollPane(txtAssignmentInfo);
         
+        btnSubmitAssignment = new JButton();
+        btnSubmitAssignment.setBackground(new java.awt.Color(76, 175, 80));
+        btnSubmitAssignment.setForeground(java.awt.Color.WHITE);
+        btnSubmitAssignment.setText("Submit Assignment for Selected Course");
+        btnSubmitAssignment.addActionListener(evt -> btnSubmitAssignmentActionPerformed(evt));
+        
         btnRefresh = new JButton();
         btnRefresh.setText("Refresh");
         btnRefresh.addActionListener(evt -> loadMyCourses());
@@ -96,7 +112,7 @@ public class CourseWorkPanel extends javax.swing.JPanel {
         setLayout(null);
         
         add(lblTitle);
-        lblTitle.setBounds(30, 20, 400, 30);
+        lblTitle.setBounds(30, 20, 500, 30);
         
         add(lblSemester);
         lblSemester.setBounds(30, 65, 80, 25);
@@ -111,13 +127,16 @@ public class CourseWorkPanel extends javax.swing.JPanel {
         add(scrollCourses);
         scrollCourses.setBounds(30, 130, 750, 200);
         
+        add(btnSubmitAssignment);
+        btnSubmitAssignment.setBounds(420, 345, 330, 35);
+        
         add(lblAssignmentInfo);
-        lblAssignmentInfo.setBounds(30, 345, 300, 25);
+        lblAssignmentInfo.setBounds(30, 390, 300, 25);
         add(scrollInfo);
-        scrollInfo.setBounds(30, 375, 750, 150);
+        scrollInfo.setBounds(30, 420, 750, 130);
         
         add(btnBack);
-        btnBack.setBounds(30, 545, 100, 35);
+        btnBack.setBounds(30, 565, 100, 35);
     }
     
     private void loadMyCourses() {
@@ -153,46 +172,132 @@ public class CourseWorkPanel extends javax.swing.JPanel {
         progressSummary.append("-".repeat(60)).append("\n\n");
         
         int gradedCount = 0;
+        int submittedCount = 0;
         
         for (SeatAssignment sa : enrollments) {
             Course course = sa.getAssociatedCourse();
+            String courseNumber = course.getCOurseNumber();
             String letterGrade = sa.getLetterGrade();
-            String status;
             
+            // Check assignment submission status
+            String submissionKey = semester + "-" + courseNumber;
+            boolean isSubmitted = assignmentSubmissions.getOrDefault(submissionKey, false);
+            
+            String assignmentStatus;
             if (letterGrade != null && !letterGrade.isEmpty()) {
-                status = "Graded: " + letterGrade;
+                assignmentStatus = "Graded";
                 gradedCount++;
+            } else if (isSubmitted) {
+                assignmentStatus = "Submitted - Pending Grade";
+                submittedCount++;
             } else {
-                status = "In Progress";
+                assignmentStatus = "Not Submitted";
             }
             
             Object[] row = new Object[5];
-            row[0] = course.getCOurseNumber();
+            row[0] = courseNumber;
             row[1] = course.getName();
             row[2] = course.getCredits();
             row[3] = letterGrade != null ? letterGrade : "N/A";
-            row[4] = status;
+            row[4] = assignmentStatus;
             
             model.addRow(row);
             
             // Add to progress summary
-            progressSummary.append("📚 ").append(course.getCOurseNumber()).append(" - ").append(course.getName()).append("\n");
+            progressSummary.append(">> ").append(courseNumber).append(" - ").append(course.getName()).append("\n");
             progressSummary.append("   Grade: ").append(letterGrade != null ? letterGrade : "Not yet graded").append("\n");
-            progressSummary.append("   Status: ").append(status).append("\n\n");
+            progressSummary.append("   Assignment: ").append(assignmentStatus).append("\n\n");
         }
         
         progressSummary.append("\nPROGRESS METRICS:\n");
         progressSummary.append("-".repeat(60)).append("\n");
         progressSummary.append("Courses Graded: ").append(gradedCount).append(" / ").append(enrollments.size()).append("\n");
-        progressSummary.append("Courses In Progress: ").append(enrollments.size() - gradedCount).append("\n");
+        progressSummary.append("Assignments Submitted: ").append(submittedCount).append(" / ").append(enrollments.size() - gradedCount).append("\n");
+        progressSummary.append("Pending Submission: ").append(enrollments.size() - gradedCount - submittedCount).append("\n");
         
         if (gradedCount == enrollments.size() && enrollments.size() > 0) {
-            progressSummary.append("\n✅ All courses have been graded!");
+            progressSummary.append("\nAll courses have been graded!");
+        } else if (submittedCount + gradedCount == enrollments.size() && enrollments.size() > 0) {
+            progressSummary.append("\nAll assignments submitted! Waiting for grades.");
         }
         
         txtAssignmentInfo.setText(progressSummary.toString());
         
-        System.out.println("✅ Loaded course work for " + enrollments.size() + " courses");
+        System.out.println("Loaded course work for " + enrollments.size() + " courses");
+    }
+    
+    /**
+     * Submit assignment for selected course
+     */
+    private void btnSubmitAssignmentActionPerformed(java.awt.event.ActionEvent evt) {
+        int selectedRow = tblMyCourses.getSelectedRow();
+        
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(this, 
+                "Please select a course from the table first!",
+                "No Course Selected",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        String courseNumber = (String) tblMyCourses.getValueAt(selectedRow, 0);
+        String courseName = (String) tblMyCourses.getValueAt(selectedRow, 1);
+        String currentGrade = (String) tblMyCourses.getValueAt(selectedRow, 3);
+        String currentStatus = (String) tblMyCourses.getValueAt(selectedRow, 4);
+        
+        // Check if already graded
+        if (!"N/A".equals(currentGrade)) {
+            JOptionPane.showMessageDialog(this,
+                "This course has already been graded!\n\n" +
+                "Course: " + courseNumber + "\n" +
+                "Grade: " + currentGrade + "\n\n" +
+                "You cannot submit assignments for graded courses.",
+                "Already Graded",
+                JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        
+        // Check if already submitted
+        String semester = (String) cmbSemester.getSelectedItem();
+        String submissionKey = semester + "-" + courseNumber;
+        
+        if (assignmentSubmissions.getOrDefault(submissionKey, false)) {
+            JOptionPane.showMessageDialog(this,
+                "Assignment already submitted for this course!\n\n" +
+                "Course: " + courseNumber + " - " + courseName + "\n" +
+                "Status: Waiting for faculty to grade",
+                "Already Submitted",
+                JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        
+        // Confirm submission
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Submit assignment for:\n\n" +
+            courseNumber + " - " + courseName + "\n\n" +
+            "Note: This is a mock submission for demonstration.\n" +
+            "In a real system, you would upload files here.",
+            "Confirm Submission",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE);
+        
+        if (confirm != JOptionPane.YES_OPTION) return;
+        
+        // Record submission
+        assignmentSubmissions.put(submissionKey, true);
+        
+        JOptionPane.showMessageDialog(this,
+            "Assignment submitted successfully!\n\n" +
+            "Course: " + courseNumber + " - " + courseName + "\n" +
+            "Status: Submitted - Pending Grade\n\n" +
+            "Your faculty will grade this soon.",
+            "Submission Complete",
+            JOptionPane.INFORMATION_MESSAGE);
+        
+        System.out.println("Assignment submitted for " + courseNumber);
+        
+        // Refresh display
+        loadMyCourses();
     }
     
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {

@@ -5,6 +5,12 @@ import Business.Profiles.StudentProfile;
 import Business.Person.Person;
 import javax.swing.*;
 
+/**
+ * Student Profile Panel
+ * Student can view and edit their profile
+ * 
+ * @author chethan
+ */
 public class StudentProfilePanel extends javax.swing.JPanel {
 
     JPanel CardSequencePanel;
@@ -100,7 +106,7 @@ public class StudentProfilePanel extends javax.swing.JPanel {
     
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {
         if (txtEmail.getText().trim().isEmpty() || !txtEmail.getText().contains("@")) {
-            lblMessage.setText("⚠️ Valid email required!");
+            lblMessage.setText("Valid email required!");
             lblMessage.setForeground(java.awt.Color.RED);
             return;
         }
@@ -111,7 +117,7 @@ public class StudentProfilePanel extends javax.swing.JPanel {
         person.setEmail(txtEmail.getText().trim());
         person.setPhone(txtPhone.getText().trim());
         
-        lblMessage.setText("✅ Profile updated!");
+        lblMessage.setText("Profile updated!");
         lblMessage.setForeground(new java.awt.Color(0, 128, 0));
         JOptionPane.showMessageDialog(this, "Profile updated successfully!");
     }

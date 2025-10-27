@@ -18,6 +18,8 @@ import java.util.ArrayList;
 /**
  * Course Registration Panel
  * Student can search, enroll, and drop courses with 8-credit validation
+ * 
+ * @author chethan
  */
 public class CourseRegistrationPanel extends javax.swing.JPanel {
 
@@ -181,337 +183,338 @@ public class CourseRegistrationPanel extends javax.swing.JPanel {
         loadMyEnrollments();
     }
     
-   private void loadAvailableCourses() {
-    DefaultTableModel model = (DefaultTableModel) tblAvailableCourses.getModel();
-    model.setRowCount(0);
-    
-    String semester = (String) cmbSemester.getSelectedItem();
-    if (semester == null) return;
-    
-    Department dept = business.getDepartment();
-    CourseSchedule schedule = dept.getCourseSchedule(semester);
-    
-    if (schedule == null) return;
-    
-    ArrayList<CourseOffer> offerings = schedule.getCourseOffers();
-    
-    for (CourseOffer offer : offerings) {
-        addCourseToTable(model, offer);
+    private void loadAvailableCourses() {
+        DefaultTableModel model = (DefaultTableModel) tblAvailableCourses.getModel();
+        model.setRowCount(0);
+        
+        String semester = (String) cmbSemester.getSelectedItem();
+        if (semester == null) return;
+        
+        Department dept = business.getDepartment();
+        CourseSchedule schedule = dept.getCourseSchedule(semester);
+        
+        if (schedule == null) return;
+        
+        ArrayList<CourseOffer> offerings = schedule.getCourseOffers();
+        
+        for (CourseOffer offer : offerings) {
+            addCourseToTable(model, offer);
+        }
+        
+        System.out.println("Loaded " + offerings.size() + " available courses");
     }
-    
-    System.out.println("✅ Loaded " + offerings.size() + " available courses");
-}
 
-private void addCourseToTable(DefaultTableModel model, CourseOffer offer) {
-    Object[] row = new Object[7];
-    
-    Course course = offer.getSubjectCourse();
-    row[0] = course.getCOurseNumber();
-    row[1] = course.getName();
-    row[2] = course.getCredits();
-    
-    // Faculty
-    try {
-        info5100.university.example.Persona.Faculty.FacultyProfile faculty = offer.getFacultyProfile();
-        row[3] = faculty != null && faculty.getPerson() != null ? 
-                 faculty.getPerson().getFullName() : "TBD";
-    } catch (Exception e) {
-        row[3] = "TBD";
-    }
-    
-    row[4] = offer.getEnrolledCount();
-    row[5] = offer.getCapacity();
-    
-    // Status
-    boolean isFull = offer.getEnrolledCount() >= offer.getCapacity();
-    boolean isOpen = offer.isEnrollmentOpen();
-    
-    if (!isOpen) {
-        row[6] = "Closed";
-    } else if (isFull) {
-        row[6] = "Full";
-    } else {
-        row[6] = "Open";
-    }
-    
-    model.addRow(row);
-}
-    
-    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {
-    String searchType = (String) cmbSearchType.getSelectedItem();
-    String searchText = txtSearch.getText().trim().toLowerCase();
-    
-    if (searchText.isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Please enter search text!");
-        return;
-    }
-    
-    DefaultTableModel model = (DefaultTableModel) tblAvailableCourses.getModel();
-    model.setRowCount(0);
-    
-    String semester = (String) cmbSemester.getSelectedItem();
-    Department dept = business.getDepartment();
-    CourseSchedule schedule = dept.getCourseSchedule(semester);
-    
-    if (schedule == null) return;
-    
-    ArrayList<CourseOffer> offerings = schedule.getCourseOffers();
-    int resultsFound = 0;
-    
-    for (CourseOffer offer : offerings) {
-        boolean matches = false;
+    private void addCourseToTable(DefaultTableModel model, CourseOffer offer) {
+        Object[] row = new Object[7];
         
         Course course = offer.getSubjectCourse();
+        row[0] = course.getCOurseNumber();
+        row[1] = course.getName();
+        row[2] = course.getCredits();
         
-        // SEARCH METHOD 1: By Course ID
-        if ("Course ID".equals(searchType)) {
-            matches = course.getCOurseNumber().toLowerCase().contains(searchText);
-        }
-        // SEARCH METHOD 2: By Teacher Name
-        else if ("Teacher Name".equals(searchType)) {
-            try {
-                info5100.university.example.Persona.Faculty.FacultyProfile faculty = offer.getFacultyProfile();
-                if (faculty != null && faculty.getPerson() != null) {
-                    String facultyName = faculty.getPerson().getFullName().toLowerCase();
-                    matches = facultyName.contains(searchText);
-                }
-            } catch (Exception e) {
-                matches = false;
-            }
-        }
-        // SEARCH METHOD 3: By Department
-        else if ("Department".equals(searchType)) {
-            String deptName = dept.getName().toLowerCase();
-            matches = deptName.contains(searchText);
+        // Faculty
+        try {
+            info5100.university.example.Persona.Faculty.FacultyProfile faculty = offer.getFacultyProfile();
+            row[3] = faculty != null && faculty.getPerson() != null ? 
+                     faculty.getPerson().getFullName() : "TBD";
+        } catch (Exception e) {
+            row[3] = "TBD";
         }
         
-        if (matches) {
-            addCourseToTable(model, offer);
-            resultsFound++;
-        }
-    }
-    
-    System.out.println("✅ Search completed: " + resultsFound + " results found");
-    
-    if (resultsFound == 0) {
-        JOptionPane.showMessageDialog(this, "No courses found matching: " + searchText);
-    }
-}
-    
-   private void loadMyEnrollments() {
-    DefaultTableModel model = (DefaultTableModel) tblMyEnrollments.getModel();
-    model.setRowCount(0);
-    
-    String semester = (String) cmbSemester.getSelectedItem();
-    if (semester == null) return;
-    
-    // Get student's university profile
-    info5100.university.example.Persona.StudentProfile univStudent = student.getUniversityProfile();
-    Transcript transcript = univStudent.getTranscript();
-    
-    // Get course load for selected semester
-    CourseLoad courseLoad = transcript.getCourseLoadBySemester(semester);
-    
-    int totalCredits = 0;
-    
-    if (courseLoad != null) {
-        ArrayList<SeatAssignment> enrollments = courseLoad.getSeatAssignments();
+        row[4] = offer.getEnrolledCount();
+        row[5] = offer.getCapacity();
         
-        for (SeatAssignment sa : enrollments) {
-            Object[] row = new Object[4];
-            
-            Course course = sa.getAssociatedCourse();
-            row[0] = course.getCOurseNumber();
-            row[1] = course.getName();
-            row[2] = course.getCredits();
-            row[3] = semester;
-            
-            model.addRow(row);
-            totalCredits += course.getCredits();
+        // Status
+        boolean isFull = offer.getEnrolledCount() >= offer.getCapacity();
+        boolean isOpen = offer.isEnrollmentOpen();
+        
+        if (!isOpen) {
+            row[6] = "Closed";
+        } else if (isFull) {
+            row[6] = "Full";
+        } else {
+            row[6] = "Open";
         }
+        
+        model.addRow(row);
     }
     
-    // Update label with credit count
-    lblMyEnrollments.setText(String.format("My Current Enrollments (%d credits / 8 max):", totalCredits));
-    
-    System.out.println("✅ Student has " + totalCredits + " credits enrolled");
-}
-    
-    private void btnEnrollActionPerformed(java.awt.event.ActionEvent evt) {
-    // Get selected course from available courses table
-    int selectedRow = tblAvailableCourses.getSelectedRow();
-    
-    if (selectedRow < 0) {
-        JOptionPane.showMessageDialog(this, "Please select a course to enroll!");
-        return;
-    }
-    
-    String courseNumber = (String) tblAvailableCourses.getValueAt(selectedRow, 0);
-    String status = (String) tblAvailableCourses.getValueAt(selectedRow, 6);
-    
-    // Check if course is open and not full
-    if ("Closed".equals(status)) {
-        JOptionPane.showMessageDialog(this, "This course is closed for enrollment!");
-        return;
-    }
-    
-    if ("Full".equals(status)) {
-        JOptionPane.showMessageDialog(this, "This course is full!");
-        return;
-    }
-    
-    // Get course offer
-    String semester = (String) cmbSemester.getSelectedItem();
-    Department dept = business.getDepartment();
-    CourseSchedule schedule = dept.getCourseSchedule(semester);
-    CourseOffer offer = schedule.getCourseOfferByNumber(courseNumber);
-    
-    if (offer == null) {
-        JOptionPane.showMessageDialog(this, "Course not found!");
-        return;
-    }
-    
-    // Get student's course load
-    info5100.university.example.Persona.StudentProfile univStudent = student.getUniversityProfile();
-    Transcript transcript = univStudent.getTranscript();
-    CourseLoad courseLoad = transcript.getCourseLoadBySemester(semester);
-    
-    if (courseLoad == null) {
-        courseLoad = univStudent.newCourseLoad(semester);
-    }
-    
-    // CHECK 1: 8-CREDIT LIMIT VALIDATION
-    int currentCredits = courseLoad.getTotalCreditHours();
-    int courseCredits = offer.getSubjectCourse().getCredits();
-    
-    if (currentCredits + courseCredits > 8) {
-        JOptionPane.showMessageDialog(this,
-            "Cannot enroll! Exceeds 8-credit limit.\n\n" +
-            "Current credits: " + currentCredits + "\n" +
-            "Course credits: " + courseCredits + "\n" +
-            "Total would be: " + (currentCredits + courseCredits) + "\n" +
-            "Maximum allowed: 8",
-            "Credit Limit Exceeded",
-            JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-    
-    // CHECK 2: Already enrolled check
-    ArrayList<SeatAssignment> currentEnrollments = courseLoad.getSeatAssignments();
-    for (SeatAssignment sa : currentEnrollments) {
-        if (sa.getAssociatedCourse().getCOurseNumber().equals(courseNumber)) {
-            JOptionPane.showMessageDialog(this, "You are already enrolled in this course!");
+    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {
+        String searchType = (String) cmbSearchType.getSelectedItem();
+        String searchText = txtSearch.getText().trim().toLowerCase();
+        
+        if (searchText.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter search text!");
             return;
         }
-    }
-    
-    // ENROLL THE STUDENT
-    SeatAssignment sa = offer.assignEmptySeat(courseLoad);
-    
-    if (sa == null) {
-        JOptionPane.showMessageDialog(this, "Enrollment failed! Course may be full.");
-        return;
-    }
-    
-    System.out.println("✅ Enrolled in " + courseNumber + " | Credits: " + (currentCredits + courseCredits) + "/8");
-    
-    // AUTO-BILL TUITION FOR THIS COURSE
-double courseTuition = offer.getSubjectCourse().getCoursePrice();
-student.addTuitionCharge(courseTuition);
-
-System.out.println("💰 Billed tuition: $" + courseTuition + " | New balance: $" + student.getTuitionBalance());
-    
-    JOptionPane.showMessageDialog(this,
-    "✅ Enrolled successfully!\n\n" +
-    "Course: " + courseNumber + "\n" +
-    "Credits: " + courseCredits + "\n" +
-    "Total credits: " + (currentCredits + courseCredits) + "/8\n\n" +
-    "Tuition billed: $" + String.format("%,d", (int)courseTuition) + "\n" +
-    "New balance: $" + String.format("%,d", (int)student.getTuitionBalance()),
-    "Enrolled & Billed",
-    JOptionPane.INFORMATION_MESSAGE);
-    
-    // Refresh both tables
-    loadAvailableCourses();
-    loadMyEnrollments();
-}
-    
-   private void btnDropActionPerformed(java.awt.event.ActionEvent evt) {
-    // Get selected course from MY ENROLLMENTS table
-    int selectedRow = tblMyEnrollments.getSelectedRow();
-    
-    if (selectedRow < 0) {
-        JOptionPane.showMessageDialog(this, "Please select a course from your enrollments to drop!");
-        return;
-    }
-    
-    String courseNumber = (String) tblMyEnrollments.getValueAt(selectedRow, 0);
-    String courseName = (String) tblMyEnrollments.getValueAt(selectedRow, 1);
-    
-    // Confirm drop
-    int confirm = JOptionPane.showConfirmDialog(this,
-        "Are you sure you want to drop:\n\n" +
-        courseNumber + " - " + courseName + "?",
-        "Confirm Drop",
-        JOptionPane.YES_NO_OPTION,
-        JOptionPane.WARNING_MESSAGE);
-    
-    if (confirm != JOptionPane.YES_OPTION) {
-        return;
-    }
-    
-    // Get student's course load
-    String semester = (String) cmbSemester.getSelectedItem();
-    info5100.university.example.Persona.StudentProfile univStudent = student.getUniversityProfile();
-    Transcript transcript = univStudent.getTranscript();
-    CourseLoad courseLoad = transcript.getCourseLoadBySemester(semester);
-    
-    if (courseLoad == null) {
-        JOptionPane.showMessageDialog(this, "Error: Course load not found!");
-        return;
-    }
-    
-    // Find and remove the seat assignment
-    ArrayList<SeatAssignment> enrollments = courseLoad.getSeatAssignments();
-    SeatAssignment toRemove = null;
-    
-    for (SeatAssignment sa : enrollments) {
-        if (sa.getAssociatedCourse().getCOurseNumber().equals(courseNumber)) {
-            toRemove = sa;
-            break;
+        
+        DefaultTableModel model = (DefaultTableModel) tblAvailableCourses.getModel();
+        model.setRowCount(0);
+        
+        String semester = (String) cmbSemester.getSelectedItem();
+        Department dept = business.getDepartment();
+        CourseSchedule schedule = dept.getCourseSchedule(semester);
+        
+        if (schedule == null) return;
+        
+        ArrayList<CourseOffer> offerings = schedule.getCourseOffers();
+        int resultsFound = 0;
+        
+        for (CourseOffer offer : offerings) {
+            boolean matches = false;
+            
+            Course course = offer.getSubjectCourse();
+            
+            // SEARCH METHOD 1: By Course ID
+            if ("Course ID".equals(searchType)) {
+                matches = course.getCOurseNumber().toLowerCase().contains(searchText);
+            }
+            // SEARCH METHOD 2: By Teacher Name
+            else if ("Teacher Name".equals(searchType)) {
+                try {
+                    info5100.university.example.Persona.Faculty.FacultyProfile faculty = offer.getFacultyProfile();
+                    if (faculty != null && faculty.getPerson() != null) {
+                        String facultyName = faculty.getPerson().getFullName().toLowerCase();
+                        matches = facultyName.contains(searchText);
+                    }
+                } catch (Exception e) {
+                    matches = false;
+                }
+            }
+            // SEARCH METHOD 3: By Department
+            else if ("Department".equals(searchType)) {
+                String deptName = dept.getName().toLowerCase();
+                matches = deptName.contains(searchText);
+            }
+            
+            if (matches) {
+                addCourseToTable(model, offer);
+                resultsFound++;
+            }
+        }
+        
+        System.out.println("Search completed: " + resultsFound + " results found");
+        
+        if (resultsFound == 0) {
+            JOptionPane.showMessageDialog(this, "No courses found matching: " + searchText);
         }
     }
     
-    if (toRemove == null) {
-        JOptionPane.showMessageDialog(this, "Error: Enrollment not found!");
-        return;
+    private void loadMyEnrollments() {
+        DefaultTableModel model = (DefaultTableModel) tblMyEnrollments.getModel();
+        model.setRowCount(0);
+        
+        String semester = (String) cmbSemester.getSelectedItem();
+        if (semester == null) return;
+        
+        // Get student's university profile
+        info5100.university.example.Persona.StudentProfile univStudent = student.getUniversityProfile();
+        Transcript transcript = univStudent.getTranscript();
+        
+        // Get course load for selected semester
+        CourseLoad courseLoad = transcript.getCourseLoadBySemester(semester);
+        
+        int totalCredits = 0;
+        
+        if (courseLoad != null) {
+            ArrayList<SeatAssignment> enrollments = courseLoad.getSeatAssignments();
+            
+            for (SeatAssignment sa : enrollments) {
+                Object[] row = new Object[4];
+                
+                Course course = sa.getAssociatedCourse();
+                row[0] = course.getCOurseNumber();
+                row[1] = course.getName();
+                row[2] = course.getCredits();
+                row[3] = semester;
+                
+                model.addRow(row);
+                totalCredits += course.getCredits();
+            }
+        }
+        
+        // Update label with credit count
+        lblMyEnrollments.setText(String.format("My Current Enrollments (%d credits / 8 max):", totalCredits));
+        
+        System.out.println("Student has " + totalCredits + " credits enrolled");
     }
     
-    // Remove from course load
-    enrollments.remove(toRemove);
-    
-    // Vacate the seat
-    toRemove.getSeat().vacate();
-    
-    System.out.println("✅ Dropped course: " + courseNumber);
-    // REFUND TUITION FOR DROPPED COURSE
-double coursePrice = toRemove.getAssociatedCourse().getCoursePrice();
-student.refundTuition(coursePrice);
+    private void btnEnrollActionPerformed(java.awt.event.ActionEvent evt) {
+        // Get selected course from available courses table
+        int selectedRow = tblAvailableCourses.getSelectedRow();
+        
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(this, "Please select a course to enroll!");
+            return;
+        }
+        
+        String courseNumber = (String) tblAvailableCourses.getValueAt(selectedRow, 0);
+        String status = (String) tblAvailableCourses.getValueAt(selectedRow, 6);
+        
+        // Check if course is open and not full
+        if ("Closed".equals(status)) {
+            JOptionPane.showMessageDialog(this, "This course is closed for enrollment!");
+            return;
+        }
+        
+        if ("Full".equals(status)) {
+            JOptionPane.showMessageDialog(this, "This course is full!");
+            return;
+        }
+        
+        // Get course offer
+        String semester = (String) cmbSemester.getSelectedItem();
+        Department dept = business.getDepartment();
+        CourseSchedule schedule = dept.getCourseSchedule(semester);
+        CourseOffer offer = schedule.getCourseOfferByNumber(courseNumber);
+        
+        if (offer == null) {
+            JOptionPane.showMessageDialog(this, "Course not found!");
+            return;
+        }
+        
+        // Get student's course load
+        info5100.university.example.Persona.StudentProfile univStudent = student.getUniversityProfile();
+        Transcript transcript = univStudent.getTranscript();
+        CourseLoad courseLoad = transcript.getCourseLoadBySemester(semester);
+        
+        if (courseLoad == null) {
+            courseLoad = univStudent.newCourseLoad(semester);
+        }
+        
+        // CHECK 1: 8-CREDIT LIMIT VALIDATION
+        int currentCredits = courseLoad.getTotalCreditHours();
+        int courseCredits = offer.getSubjectCourse().getCredits();
+        
+        if (currentCredits + courseCredits > 8) {
+            JOptionPane.showMessageDialog(this,
+                "Cannot enroll! Exceeds 8-credit limit.\n\n" +
+                "Current credits: " + currentCredits + "\n" +
+                "Course credits: " + courseCredits + "\n" +
+                "Total would be: " + (currentCredits + courseCredits) + "\n" +
+                "Maximum allowed: 8",
+                "Credit Limit Exceeded",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        // CHECK 2: Already enrolled check
+        ArrayList<SeatAssignment> currentEnrollments = courseLoad.getSeatAssignments();
+        for (SeatAssignment sa : currentEnrollments) {
+            if (sa.getAssociatedCourse().getCOurseNumber().equals(courseNumber)) {
+                JOptionPane.showMessageDialog(this, "You are already enrolled in this course!");
+                return;
+            }
+        }
+        
+        // ENROLL THE STUDENT
+        SeatAssignment sa = offer.assignEmptySeat(courseLoad);
+        
+        if (sa == null) {
+            JOptionPane.showMessageDialog(this, "Enrollment failed! Course may be full.");
+            return;
+        }
+        
+        System.out.println("Enrolled in " + courseNumber + " | Credits: " + (currentCredits + courseCredits) + "/8");
+        
+        // AUTO-BILL TUITION FOR THIS COURSE
+        double courseTuition = offer.getSubjectCourse().getCoursePrice();
+        student.addTuitionCharge(courseTuition);
 
-System.out.println("💰 Refunded tuition: $" + coursePrice + " | New balance: $" + student.getTuitionBalance());
+        System.out.println("Billed tuition: $" + courseTuition + " | New balance: $" + student.getTuitionBalance());
+        
+        JOptionPane.showMessageDialog(this,
+        "Enrolled successfully!\n\n" +
+        "Course: " + courseNumber + "\n" +
+        "Credits: " + courseCredits + "\n" +
+        "Total credits: " + (currentCredits + courseCredits) + "/8\n\n" +
+        "Tuition billed: $" + String.format("%,d", (int)courseTuition) + "\n" +
+        "New balance: $" + String.format("%,d", (int)student.getTuitionBalance()),
+        "Enrolled & Billed",
+        JOptionPane.INFORMATION_MESSAGE);
+        
+        // Refresh both tables
+        loadAvailableCourses();
+        loadMyEnrollments();
+    }
     
-   JOptionPane.showMessageDialog(this,
-    "✅ Course dropped successfully!\n\n" +
-    "Course: " + courseNumber + " - " + courseName + "\n\n" +
-    "Tuition refunded: $" + String.format("%,d", (int)coursePrice) + "\n" +
-    "New balance: $" + String.format("%,d", (int)student.getTuitionBalance()),
-    "Dropped & Refunded",
-    JOptionPane.INFORMATION_MESSAGE);
-    
-    // Refresh both tables
-    loadAvailableCourses();
-    loadMyEnrollments();
-}
+    private void btnDropActionPerformed(java.awt.event.ActionEvent evt) {
+        // Get selected course from MY ENROLLMENTS table
+        int selectedRow = tblMyEnrollments.getSelectedRow();
+        
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(this, "Please select a course from your enrollments to drop!");
+            return;
+        }
+        
+        String courseNumber = (String) tblMyEnrollments.getValueAt(selectedRow, 0);
+        String courseName = (String) tblMyEnrollments.getValueAt(selectedRow, 1);
+        
+        // Confirm drop
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Are you sure you want to drop:\n\n" +
+            courseNumber + " - " + courseName + "?",
+            "Confirm Drop",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
+        
+        if (confirm != JOptionPane.YES_OPTION) {
+            return;
+        }
+        
+        // Get student's course load
+        String semester = (String) cmbSemester.getSelectedItem();
+        info5100.university.example.Persona.StudentProfile univStudent = student.getUniversityProfile();
+        Transcript transcript = univStudent.getTranscript();
+        CourseLoad courseLoad = transcript.getCourseLoadBySemester(semester);
+        
+        if (courseLoad == null) {
+            JOptionPane.showMessageDialog(this, "Error: Course load not found!");
+            return;
+        }
+        
+        // Find and remove the seat assignment
+        ArrayList<SeatAssignment> enrollments = courseLoad.getSeatAssignments();
+        SeatAssignment toRemove = null;
+        
+        for (SeatAssignment sa : enrollments) {
+            if (sa.getAssociatedCourse().getCOurseNumber().equals(courseNumber)) {
+                toRemove = sa;
+                break;
+            }
+        }
+        
+        if (toRemove == null) {
+            JOptionPane.showMessageDialog(this, "Error: Enrollment not found!");
+            return;
+        }
+        
+        // Remove from course load
+        enrollments.remove(toRemove);
+        
+        // Vacate the seat
+        toRemove.getSeat().vacate();
+        
+        System.out.println("Dropped course: " + courseNumber);
+        
+        // REFUND TUITION FOR DROPPED COURSE
+        double coursePrice = toRemove.getAssociatedCourse().getCoursePrice();
+        student.refundTuition(coursePrice);
+
+        System.out.println("Refunded tuition: $" + coursePrice + " | New balance: $" + student.getTuitionBalance());
+        
+        JOptionPane.showMessageDialog(this,
+        "Course dropped successfully!\n\n" +
+        "Course: " + courseNumber + " - " + courseName + "\n\n" +
+        "Tuition refunded: $" + String.format("%,d", (int)coursePrice) + "\n" +
+        "New balance: $" + String.format("%,d", (int)student.getTuitionBalance()),
+        "Dropped & Refunded",
+        JOptionPane.INFORMATION_MESSAGE);
+        
+        // Refresh both tables
+        loadAvailableCourses();
+        loadMyEnrollments();
+    }
     
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {
         CardSequencePanel.remove(this);
