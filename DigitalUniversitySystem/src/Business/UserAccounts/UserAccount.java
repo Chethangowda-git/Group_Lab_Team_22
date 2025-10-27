@@ -51,6 +51,23 @@ public class UserAccount {
             return profile;
         }
         
+        /**
+ * Update username (Admin function)
+ * @param username New username
+ */
+public void setUsername(String username) {
+    this.username = username;
+}
+
+/**
+ * Update password (Admin function)
+ * @param password New password
+ */
+public void setPassword(String password) {
+    this.password = password;
+}
+
+
     @Override
         public String toString(){
             
