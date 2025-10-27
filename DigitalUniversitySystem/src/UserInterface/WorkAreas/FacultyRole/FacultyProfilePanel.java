@@ -138,6 +138,7 @@ public class FacultyProfilePanel extends javax.swing.JPanel {
         txtPhone.setText(person.getPhone() != null ? person.getPhone() : "");
     }
     
+    // ✅ FIXED VERSION - Syncs both Business and University Model
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {
         lblMessage.setText("");
         
@@ -147,11 +148,20 @@ public class FacultyProfilePanel extends javax.swing.JPanel {
             return;
         }
         
+        // Update Business layer Person
         Person person = faculty.getPerson();
         person.setFirstName(txtFirstName.getText().trim());
         person.setLastName(txtLastName.getText().trim());
         person.setEmail(txtEmail.getText().trim());
         person.setPhone(txtPhone.getText().trim());
+        
+        // ALSO update University Model Person
+        info5100.university.example.Persona.Person univPerson = 
+            faculty.getUniversityProfile().getPerson();
+        univPerson.setFirstName(txtFirstName.getText().trim());
+        univPerson.setLastName(txtLastName.getText().trim());
+        univPerson.setEmail(txtEmail.getText().trim());
+        univPerson.setPhone(txtPhone.getText().trim());
         
         lblMessage.setText("✅ Profile updated successfully!");
         lblMessage.setForeground(new java.awt.Color(0, 128, 0));
