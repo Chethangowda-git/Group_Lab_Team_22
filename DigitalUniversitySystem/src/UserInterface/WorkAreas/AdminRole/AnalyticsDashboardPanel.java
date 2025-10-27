@@ -227,28 +227,32 @@ int registrarCount = rd.getRegistrarList().size();
             }
         }
         
-        // POPULATE COURSE ENROLLMENT TABLE
-        DefaultTableModel courseModel = (DefaultTableModel) tblCourseEnrollment.getModel();
-        courseModel.setRowCount(0);
-        
-        for (CourseOffer offer : offerings) {
-            Object[] row = new Object[5];
-            
-            info5100.university.example.CourseCatalog.Course course = offer.getSubjectCourse();
-            int capacity = offer.getCapacity();
-            int enrolled = offer.getEnrolledCount();
-            double enrollPercent = capacity > 0 ? (enrolled * 100.0 / capacity) : 0;
-            
-            row[0] = course.getCOurseNumber();
-            row[1] = course.getName();
-            row[2] = capacity;
-            row[3] = enrolled;
-            row[4] = String.format("%.1f%%", enrollPercent);
-            
-            courseModel.addRow(row);
-            totalEnrollments += enrolled;
-        }
-        
+// POPULATE COURSE ENROLLMENT TABLE
+DefaultTableModel courseModel = (DefaultTableModel) tblCourseEnrollment.getModel();
+courseModel.setRowCount(0);
+
+for (CourseOffer offer : offerings) {
+    info5100.university.example.CourseCatalog.Course course = offer.getSubjectCourse();
+    if (course == null) {
+        System.out.println("⚠️ Skipping course offer with null course");
+        continue; // Skip if course is null
+    }
+
+    Object[] row = new Object[5];
+
+    int capacity = offer.getCapacity();
+    int enrolled = offer.getEnrolledCount();
+    double enrollPercent = capacity > 0 ? (enrolled * 100.0 / capacity) : 0;
+
+    row[0] = course.getCOurseNumber();
+    row[1] = course.getName();
+    row[2] = capacity;
+    row[3] = enrolled;
+    row[4] = String.format("%.1f%%", enrollPercent);
+
+    courseModel.addRow(row);
+    totalEnrollments += enrolled;
+}
         lblTotalEnrollments.setText("Total Enrollments: " + totalEnrollments);
         lblTuitionRevenue.setText("Tuition Collected: $" + String.format("%,d", (int)totalTuitionCollected));
         
